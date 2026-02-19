@@ -77,3 +77,29 @@ exports.delete = async (req, res) => {
     res.status(500).json({ message: "Erro ao deletar modelo", error });
   }
 };
+
+exports.generateDocument = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { data } = req.body; 
+
+        const model = await Modelo.findByPk(id);
+        if (!model) {
+            return res.status(404).json({ message: "Modelo não encontrado" });
+        }
+
+        let finalContent = model.conteudo;
+
+        Object.keys(data).forEach(key => {
+            const regex = new RegExp(`{{${key}}}`, 'g');
+            finalContent = finalContent.replace(regex, data[key]);
+        });
+
+        res.json({
+            titulo: model.titulo,
+            documentoGerado: finalContent
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Erro ao gerar documento", error });
+    }
+};
