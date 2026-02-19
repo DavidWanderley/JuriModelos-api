@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database'); 
-const modeloRoutes = require('./routers/modeloRoutes');
+const modeloRoutes = require('./routes/modeloRoutes');
 
 const app = express();
 app.use(cors());
