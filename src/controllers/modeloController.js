@@ -20,19 +20,25 @@ exports.findAll = async (req, res) => {
 };
 
 exports.findById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const modelo = await Modelo.findByPk(id);
+    try {
+        const { id } = req.params;
+        const model = await Modelo.findByPk(id);
+        
+        if (!model) return res.status(404).json({ message: "Não encontrado" });
 
-    if (!modelo) {
-      return res.status(404).json({ message: "Modelo não encontrado" });
+        const content = model.conteudo || "";
+        const regex = /{{(.*?)}}/g;
+        const matches = [...content.matchAll(regex)].map(match => match[1]);
+        
+        res.json({
+            ...model.toJSON(),
+            variaveis: matches.length > 0 ? matches : []
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-
-    res.json(modelo);
-  } catch (error) {
-    res.status(500).json({ message: "Erro ao buscar modelo", error });
-  }
 };
+
 
 exports.update = async (req, res) => {
   try {
