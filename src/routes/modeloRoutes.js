@@ -24,7 +24,7 @@ router.get('/:id', modeloController.findById);
 
 router.post('/', upload.single("pdf_referencia"), modeloController.create);
 
-router.put('/:id', modeloController.update);
+router.put('/:id', upload.single("pdf_referencia"), modeloController.update);
 
 router.delete('/:id', modeloController.delete);
 
