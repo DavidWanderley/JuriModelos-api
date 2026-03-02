@@ -1,15 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const modeloController = require('../controllers/modeloController');
-const authMiddleware = require('../middlewares/authMiddleware'); 
+const authMiddleware = require('../middlewares/authMiddleware');
+const multer = require('multer');
+const path = require('path');
 
-router.use(authMiddleware); 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); 
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage });
+
+router.use(authMiddleware);
+
+router.post('/', upload.single("pdf_referencia"), modeloController.create);
 
 router.get('/', modeloController.findAll);
-router.post('/', modeloController.create);
-router.get('/:id', modeloController.findById);
-router.put('/:id', modeloController.update);
-router.delete('/:id', modeloController.delete);
-router.post('/:id/generate', modeloController.generateDocument);
 
 module.exports = router;

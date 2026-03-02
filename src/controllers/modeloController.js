@@ -2,11 +2,22 @@ const Modelo = require("../models/Modelo");
 
 exports.create = async (req, res) => {
   try {
-    const { titulo, categoria, conteudo } = req.body;
-    const novoModelo = await Modelo.create({ titulo, categoria, conteudo });
+    console.log("Dados do formulário:", req.body); 
+    console.log("Arquivo recebido:", req.file);   
+
+    if (!req.file) {
+      console.log("⚠️ Nenhum arquivo foi recebido pelo Multer.");
+    }
+
+    const novoModelo = await Modelo.create({
+      ...req.body,
+      pdf_url: req.file ? req.file.filename : null
+    });
+
     res.status(201).json(novoModelo);
   } catch (error) {
-    res.status(500).json({ message: "Erro ao salvar modelo jurídico", error });
+    console.error("Erro no servidor:", error);
+    res.status(500).json({ message: "Erro ao salvar", error: error.message });
   }
 };
 

@@ -4,6 +4,7 @@ const corsConfig = require('./config/cors.js');
 const sequelize = require('./config/database.js'); 
 const modeloRoutes = require('./routes/modeloRoutes.js');
 const authRoutes = require('./routes/authRoutes.js');
+const path = require('path');
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/modelos', modeloRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 sequelize.sync({ alter: true })
     .then(() => {
