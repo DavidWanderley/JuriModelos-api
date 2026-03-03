@@ -9,18 +9,19 @@ const DocumentoGerado = sequelize.define('DocumentoGerado', {
   },
   nome_cliente: {
     type: DataTypes.STRING,
-    allowLength: false,
-    defaultValue: "Cliente não identificado"
+    allowNull: true, 
+    defaultValue: "Documento Avulso"
   },
-  conteudo_final: {
-    type: DataTypes.TEXT, 
+  caminho_arquivo: {
+    type: DataTypes.STRING, 
     allowNull: false,
   },
   modelo_titulo: {
-    type: DataTypes.STRING, 
+    type: DataTypes.STRING,
   }
 }, {
-  timestamps: true, 
+  tableName: 'documentos_gerados', 
+  timestamps: true,
 });
 
 module.exports = DocumentoGerado;

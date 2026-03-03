@@ -1,31 +1,59 @@
-const DocumentoGerado = require('../models/DocumentoGerado');
+const DocumentoGerado = require("../models/DocumentoGerado");
+const htmlToDocx = require("html-to-docx");
+const fs = require("fs");
+const path = require("path");
 
 exports.salvarHistorico = async (req, res) => {
   try {
     const { nome_cliente, conteudo_final, modelo_titulo } = req.body;
-    
-    const novoDoc = await DocumentoGerado.create({
-      nome_cliente,
-      conteudo_final,
-      modelo_titulo,
-      UserId: req.userId 
+
+    const nomeTratado = nome_cliente
+      ? nome_cliente.replace(/\s+/g, "_").substring(0, 30)
+      : "Sem_Nome";
+
+    const timestamp = Date.now();
+    const nomeArquivo = `CW_${timestamp}_${nomeTratado}.docx`;
+
+    const htmlCompleto = `<!DOCTYPE html><html><body style="font-family: Arial;">${conteudo_final}</body></html>`;
+
+    const docBuffer = await htmlToDocx(htmlCompleto, null, {
+      margin: { top: 1701, right: 1134, bottom: 1134, left: 1701 },
     });
 
-    res.status(201).json(novoDoc);
+    const caminhoFisico = path.join(
+      __dirname,
+      "../../uploads/gerados",
+      nomeArquivo,
+    );
+
+    fs.writeFileSync(caminhoFisico, docBuffer);
+
+    await DocumentoGerado.create({
+      nome_cliente: nome_cliente || "Não informado",
+      caminho_arquivo: `/uploads/gerados/${nomeArquivo}`,
+      modelo_titulo: modelo_titulo || "Modelo Avulso",
+      UserId: req.userId,
+    });
+
+    res.status(201).json({
+      message: "Documento arquivado!",
+      downloadUrl: `http://localhost:5000/uploads/gerados/${nomeArquivo}`,
+    });
   } catch (error) {
-    console.error("Erro ao salvar histórico:", error);
-    res.status(500).json({ error: "Erro interno ao salvar no banco Neon." });
+    console.error("Erro na geração do arquivo:", error);
+    res.status(500).json({ error: "Falha ao processar e salvar o documento." });
   }
 };
 
 exports.listarHistorico = async (req, res) => {
   try {
     const documentos = await DocumentoGerado.findAll({
-      where: { UserId: req.userId }, 
-      order: [['createdAt', 'DESC']]
+      where: { UserId: req.userId },
+      order: [["createdAt", "DESC"]],
     });
     res.json(documentos);
   } catch (error) {
-    res.status(500).json({ error: "Erro ao buscar histórico." });
+    console.error(error);
+    res.status(500).json({ error: "Erro ao carregar histórico." });
   }
 };
