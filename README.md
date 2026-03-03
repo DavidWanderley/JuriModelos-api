@@ -1,40 +1,60 @@
-# JuriModelos ⚖️
+# ⚖️ JuriModelos API (Backend)
 
-O **JuriModelos** é uma ferramenta jurídica.
+O núcleo de processamento e persistência de dados do sistema JuriModelos. Esta API RESTful controla desde a autenticação de advogados até a automação de documentos.
 
-## 🚀 Funcionalidades
+## 🚀 Tecnologias e Ferramentas
+* **Node.js & Express:** Ambiente de execução e framework para a construção da API.
+* **Sequelize (ORM):** Gerenciamento de banco de dados SQL através de modelos JavaScript, facilitando migrações e consultas.
+* **PostgreSQL (Neon.tech):** Banco de dados relacional hospedado na nuvem com foco em escalabilidade.
+* **JWT (JSON Web Tokens):** Sistema de autenticação e autorização segura para rotas privadas.
+* **Bcrypt.js:** Algoritmo de hashing para armazenamento seguro de senhas.
+* **Multer:** Middleware para gerenciamento de uploads de arquivos (Referências em PDF).
+* **Dotenv:** Gerenciamento de variáveis de ambiente para segurança de credenciais.
 
-- **CRUD de Modelos:** Criação, edição, listagem e exclusão de modelos jurídicos.
-- **Motor de Substituição (Replace):** Identifica tags como `{{nome_cliente}}` no texto e as substitui por dados reais.
-- **Formulários Dinâmicos:** (Em desenvolvimento) Geração automática de inputs baseada nas variáveis do modelo.
-- **Persistência:** Integração com banco de dados PostgreSQL (via Neon) utilizando Sequelize.
+## ✨ Funcionalidades e Regras de Negócio
+* **Autenticação Segura:** Login e Registro com geração de tokens de acesso expiráveis.
+* **Sincronização de Banco (Sync/Alter):** Atualização dinâmica das colunas de clientes (CPF, RG, Endereço, etc.) sem perda de dados.
+* **CRUD de Clientes:** API completa para criação, listagem e atualização de dados de qualificação. 
+* **Gestão de Modelos Jurídicos:** Armazenamento de peças processuais com suporte a variáveis dinâmicas `{{...}}`.
+* **Servidor de Arquivos Estáticos:** Rota configurada para servir documentos de referência em PDF e arquivos exportados.
 
-## 🛠️ Tecnologias Utilizadas
+## 📁 Estrutura do Projeto
+```text
+src/
+├── config/             # Configurações de conexão (Banco de Dados)
+├── controllers/        # Lógica de negócio (clienteController, modeloController)
+├── middleware/         # Proteção de rotas (auth.js) e validações
+├── models/             # Definição dos Schemas (Cliente, Modelo, Usuario)
+├── routes/             # Endpoints da API segregados por módulo
+├── uploads/            # Armazenamento de documentos físicos
+└── server.js           # Ponto de entrada e inicialização do servidor.
+```
 
-### Back-end
-- [Node.js](https://nodejs.org/)
-- [Express](https://expressjs.com/)
-- [Sequelize (ORM)](https://sequelize.org/)
-- [PostgreSQL](https://www.postgresql.org/)
+## ⚙️ Instalação e Configuração
 
-### Front-end
-- [React](https://reactjs.org/)
-- [Axios](https://axios-http.com/)
+### 📁 Acesse a pasta do projeto
+```bash
+cd JuriModelos-api
+```
 
-## 📋 Estrutura da API (Endpoints)
+### 📦 Instale as dependências
+```bash
+npm install
+```
 
-| Método | Rota | Descrição |
-| :--- | :--- | :--- |
-| `GET` | `/api/modelos` | Lista todos os modelos (ordenados por criação). |
-| `GET` | `/api/modelos/:id` | Busca detalhes de um modelo específico. |
-| `POST` | `/api/modelos` | Cadastra um novo modelo. |
-| `PUT` | `/api/modelos/:id` | Atualiza um modelo existente. |
-| `DELETE` | `/api/modelos/:id` | Remove um modelo do sistema. |
-| `POST` | `/api/modelos/:id/generate` | Gera o texto final substituindo as variáveis `{{ }}`. |
+### 🔐 Configure o arquivo .env
+```env
+DATABASE_URL=sua_url_do_neon
+JWT_SECRET=sua_chave_secreta
+PORT=5000
+```
 
-## 🔧 Como Rodar o Projeto
+### 🚀 Inicie o servidor
+```bash
+npm start
+```
 
-1. **Clone os repositórios:**
-   ```bash
-   git clone [https://github.com/DavidWanderley/JuriModelos-api](https://github.com/DavidWanderley/JuriModelos-api)
-   git clone [https://github.com/DavidWanderley/JuriModelos-app](https://github.com/DavidWanderley/JuriModelos-app)
+### ⚠️ Integração com Frontend
+
+O Frontend (JuriModelos-web) espera que este servidor esteja ativo para realizar operações de login, busca de CEP e geração de documentos.
+

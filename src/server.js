@@ -5,14 +5,19 @@ const sequelize = require('./config/database.js');
 const modeloRoutes = require('./routes/modeloRoutes.js');
 const authRoutes = require('./routes/authRoutes.js');
 const documentoRoutes = require('./routes/documentoRoutes.js'); 
+const clienteRoutes = require('./routes/clienteRoutes');
 const path = require('path');
 const fs = require('fs');
 
 const User = require('./models/User');
 const DocumentoGerado = require('./models/DocumentoGerado'); 
+const Cliente = require('./models/Cliente');
 
 User.hasMany(DocumentoGerado);
 DocumentoGerado.belongsTo(User);
+
+User.hasMany(Cliente);
+Cliente.belongsTo(User);
 
 const app = express();
 
@@ -30,6 +35,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/modelos', modeloRoutes);
 app.use('/api/documentos', documentoRoutes); 
+app.use('/api/clientes', clienteRoutes);
 
 app.use('/uploads', express.static(uploadsPath));
 
