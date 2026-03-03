@@ -2,6 +2,9 @@ const User = require("../models/User.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const authConfig = require("../config/auth");
+const crypto = require("crypto");
+const { Op } = require("sequelize");
+const mail = require('../services/mail');
 
 exports.register = async (req, res) => {
   try {
@@ -85,7 +88,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
       {
         id: user.id,
-        perfil: user.perfil, 
+        perfil: user.perfil,
       },
       authConfig.secret,
       { expiresIn: authConfig.expiresIn },
@@ -101,5 +104,101 @@ exports.login = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Erro no servidor", error: error.message });
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(200).json({
+        message: "Se este e-mail estiver cadastrado, as instruções foram enviadas.",
+      });
+    }
+
+    const token = crypto.randomBytes(20).toString("hex");
+    const expires = new Date();
+    expires.setHours(expires.getHours() + 1);
+
+    await user.update({
+      resetPasswordToken: token,
+      resetPasswordExpires: expires,
+    });
+
+    const linkRecuperacao = `http://localhost:5173/reset-password/${token}`;
+
+    // 📩 ENVIANDO O E-MAIL REAL
+    await mail.sendMail({
+      from: '"JuriModelos | CW Advocacia" <suporte@cwadvocacia.com.br>',
+      to: email,
+      subject: "Recuperação de Senha - JuriModelos",
+      html: `
+        <div style="font-family: sans-serif; color: #0e1e3f; max-width: 600px;">
+          <h1 style="color: #f59e0b;">JuriModelos</h1>
+          <p>Olá, <strong>${user.nome}</strong>,</p>
+          <p>Recebemos uma solicitação para redefinir a senha da sua conta na <strong>CW Advocacia</strong>.</p>
+          <p>Para prosseguir, clique no botão abaixo (válido por 1 hora):</p>
+          <a href="${linkRecuperacao}" 
+             style="background-color: #0e1e3f; color: white; padding: 15px 25px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block;">
+            Redefinir Minha Senha
+          </a>
+          <p style="margin-top: 30px; font-size: 12px; color: #64748b;">
+            Se você não solicitou esta alteração, ignore este e-mail.
+          </p>
+        </div>
+      `,
+    });
+
+    res.status(200).json({
+      message: "Instruções de recuperação enviadas para o e-mail informado.",
+    });
+  } catch (error) {
+    console.error("Erro no envio de e-mail:", error);
+    res.status(500).json({ message: "Erro ao enviar e-mail de recuperação." });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    // 1. Procuramos o usuário com o token e validamos a expiração
+    const user = await User.findOne({
+      where: {
+        resetPasswordToken: token,
+        resetPasswordExpires: {
+          [Op.gt]: new Date(), // Verifica se a data de expiração é MAIOR que agora
+        },
+      },
+    });
+
+    // Se não encontrar, o token é inválido ou já passou de 1 hora
+    if (!user) {
+      return res.status(400).json({ 
+        message: "O link de recuperação é inválido ou expirou. Solicite um novo." 
+      });
+    }
+
+    // 2. Atualizamos a senha e limpamos os campos de segurança
+    // Importante: O hook 'beforeUpdate' ou 'beforeCreate' no seu Model 
+    // vai cuidar de criptografar essa senha nova automaticamente.
+    user.password = password;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+
+    await user.save();
+
+    return res.status(200).json({ 
+      message: "Senha atualizada com sucesso! A CW Advocacia agradece a sua segurança." 
+    });
+
+  } catch (error) {
+    console.error("ERRO NO RESET PASSWORD:", error); // 👈 Olhe o terminal do VS Code quando der erro!
+    return res.status(500).json({ 
+      message: "Erro interno ao redefinir senha.", 
+      error: error.message 
+    });
   }
 };
