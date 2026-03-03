@@ -42,7 +42,7 @@ app.use('/uploads', express.static(uploadsPath));
 sequelize.sync({ alter: true })
     .then(() => {
         console.log('🟢 Banco de dados CW Advocacia sincronizado!');
-        const PORT = process.env.PORT || 3001; 
+        const PORT = process.env.PORT || 10000;
         app.listen(PORT, () => console.log(`🚀 JuriModelos rodando na porta ${PORT}`));
     })
     .catch(err => {
