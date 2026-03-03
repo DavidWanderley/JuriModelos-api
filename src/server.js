@@ -4,16 +4,24 @@ const corsConfig = require('./config/cors.js');
 const sequelize = require('./config/database.js'); 
 const modeloRoutes = require('./routes/modeloRoutes.js');
 const authRoutes = require('./routes/authRoutes.js');
+const documentoRoutes = require('./routes/documentoRoutes.js'); 
 const path = require('path');
+
+const User = require('./models/User');
+const DocumentoGerado = require('./models/DocumentoGerado'); 
+
+User.hasMany(DocumentoGerado);
+DocumentoGerado.belongsTo(User);
 
 const app = express();
 
 app.use(corsConfig);
-
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/modelos', modeloRoutes);
+app.use('/api/documentos', documentoRoutes); 
+
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 sequelize.sync({ alter: true })

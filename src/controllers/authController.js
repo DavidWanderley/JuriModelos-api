@@ -129,7 +129,6 @@ exports.forgotPassword = async (req, res) => {
 
     const linkRecuperacao = `http://localhost:5173/reset-password/${token}`;
 
-    // 📩 ENVIANDO O E-MAIL REAL
     await mail.sendMail({
       from: '"JuriModelos | CW Advocacia" <suporte@cwadvocacia.com.br>',
       to: email,
@@ -164,26 +163,21 @@ exports.resetPassword = async (req, res) => {
   try {
     const { token, password } = req.body;
 
-    // 1. Procuramos o usuário com o token e validamos a expiração
     const user = await User.findOne({
       where: {
         resetPasswordToken: token,
         resetPasswordExpires: {
-          [Op.gt]: new Date(), // Verifica se a data de expiração é MAIOR que agora
+          [Op.gt]: new Date(), 
         },
       },
     });
 
-    // Se não encontrar, o token é inválido ou já passou de 1 hora
     if (!user) {
       return res.status(400).json({ 
         message: "O link de recuperação é inválido ou expirou. Solicite um novo." 
       });
     }
 
-    // 2. Atualizamos a senha e limpamos os campos de segurança
-    // Importante: O hook 'beforeUpdate' ou 'beforeCreate' no seu Model 
-    // vai cuidar de criptografar essa senha nova automaticamente.
     user.password = password;
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
@@ -195,7 +189,7 @@ exports.resetPassword = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("ERRO NO RESET PASSWORD:", error); // 👈 Olhe o terminal do VS Code quando der erro!
+    console.error("ERRO NO RESET PASSWORD:", error);
     return res.status(500).json({ 
       message: "Erro interno ao redefinir senha.", 
       error: error.message 
