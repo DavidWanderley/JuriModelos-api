@@ -127,7 +127,7 @@ exports.forgotPassword = async (req, res) => {
       resetPasswordExpires: expires,
     });
 
-    const linkRecuperacao = `http://localhost:5173/reset-password/${token}`;
+    const linkRecuperacao = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${token}`;
 
     await mail.sendMail({
       from: '"JuriModelos | CW Advocacia" <suporte@cwadvocacia.com.br>',
