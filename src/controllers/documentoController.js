@@ -1,4 +1,4 @@
-const DocumentoGerado = require("../models/DocumentoGerado");
+const { DocumentoGerado } = require("../models");
 const htmlToDocx = require("html-to-docx");
 const fs = require("fs");
 const path = require("path");
@@ -37,7 +37,7 @@ exports.salvarHistorico = async (req, res) => {
 
     res.status(201).json({
       message: "Documento arquivado!",
-      downloadUrl: `http://localhost:5000/uploads/gerados/${nomeArquivo}`,
+      downloadUrl: `${process.env.API_URL || 'http://localhost:5000'}/uploads/gerados/${nomeArquivo}`,
     });
   } catch (error) {
     console.error("Erro na geração do arquivo:", error);

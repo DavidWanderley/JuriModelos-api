@@ -1,4 +1,4 @@
-const User = require("../models/User.js");
+const { User } = require("../models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const authConfig = require("../config/auth");
@@ -28,7 +28,7 @@ exports.register = async (req, res) => {
 
     const userExists = await User.findOne({
       where: {
-        [require("sequelize").Op.or]: [{ email }, { cpf }],
+        [Op.or]: [{ email }, { cpf }],
       },
     });
 
