@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const authConfig = require('../config/auth');
 
 module.exports = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -23,7 +24,20 @@ module.exports = (req, res, next) => {
     }
 
     req.user = decoded; 
-    req.userId = decoded.id; 
+    req.userId = decoded.id;
+
+    const now = Math.floor(Date.now() / 1000);
+    const timeUntilExpiry = decoded.exp - now;
+
+    if (timeUntilExpiry < authConfig.refreshThreshold) {
+      const newToken = jwt.sign(
+        { id: decoded.id, perfil: decoded.perfil },
+        authConfig.secret,
+        { expiresIn: authConfig.expiresIn }
+      );
+      
+      res.setHeader('X-New-Token', newToken);
+    }
 
     return next(); 
   });
