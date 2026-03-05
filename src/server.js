@@ -6,6 +6,7 @@ const modeloRoutes = require('./routes/modeloRoutes.js');
 const authRoutes = require('./routes/authRoutes.js');
 const documentoRoutes = require('./routes/documentoRoutes.js'); 
 const clienteRoutes = require('./routes/clienteRoutes');
+const cepRoutes = require('./routes/cepRoutes');
 const path = require('path');
 const fs = require('fs');
 
@@ -32,10 +33,15 @@ if (!fs.existsSync(geradosPath)) {
 app.use(corsConfig);
 app.use(express.json());
 
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', message: 'JuriModelos API Online' });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/modelos', modeloRoutes);
 app.use('/api/documentos', documentoRoutes); 
 app.use('/api/clientes', clienteRoutes);
+app.use('/api/buscar-cep', cepRoutes);
 
 app.use('/uploads', express.static(uploadsPath));
 
