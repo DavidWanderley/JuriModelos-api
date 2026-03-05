@@ -127,35 +127,46 @@ exports.forgotPassword = async (req, res) => {
       resetPasswordExpires: expires,
     });
 
-    const linkRecuperacao = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${token}`;
+    const linkRecuperacao = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
-    await mail.sendMail({
-      from: '"JuriModelos | CW Advocacia" <suporte@cwadvocacia.com.br>',
-      to: email,
-      subject: "Recuperação de Senha - JuriModelos",
-      html: `
-        <div style="font-family: sans-serif; color: #0e1e3f; max-width: 600px;">
-          <h1 style="color: #f59e0b;">JuriModelos</h1>
-          <p>Olá, <strong>${user.nome}</strong>,</p>
-          <p>Recebemos uma solicitação para redefinir a senha da sua conta na <strong>CW Advocacia</strong>.</p>
-          <p>Para prosseguir, clique no botão abaixo (válido por 1 hora):</p>
-          <a href="${linkRecuperacao}" 
-             style="background-color: #0e1e3f; color: white; padding: 15px 25px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block;">
-            Redefinir Minha Senha
-          </a>
-          <p style="margin-top: 30px; font-size: 12px; color: #64748b;">
-            Se você não solicitou esta alteração, ignore este e-mail.
-          </p>
-        </div>
-      `,
-    });
+    try {
+      await mail.sendMail({
+        from: process.env.MAIL_USER,
+        to: email,
+        subject: "Recuperação de Senha - JuriModelos",
+        html: `
+          <div style="font-family: sans-serif; color: #0e1e3f; max-width: 600px;">
+            <h1 style="color: #f59e0b;">JuriModelos</h1>
+            <p>Olá, <strong>${user.nome}</strong>,</p>
+            <p>Recebemos uma solicitação para redefinir a senha da sua conta na <strong>CW Advocacia</strong>.</p>
+            <p>Para prosseguir, clique no botão abaixo (válido por 1 hora):</p>
+            <a href="${linkRecuperacao}" 
+               style="background-color: #0e1e3f; color: white; padding: 15px 25px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block;">
+              Redefinir Minha Senha
+            </a>
+            <p style="margin-top: 30px; font-size: 12px; color: #64748b;">
+              Se você não solicitou esta alteração, ignore este e-mail.
+            </p>
+          </div>
+        `,
+      });
+    } catch (mailError) {
+      console.error("❌ Erro ao enviar email:", mailError);
+      return res.status(500).json({ 
+        message: "Erro ao enviar e-mail. Verifique as configurações de SMTP.",
+        error: mailError.message 
+      });
+    }
 
     res.status(200).json({
       message: "Instruções de recuperação enviadas para o e-mail informado.",
     });
   } catch (error) {
-    console.error("Erro no envio de e-mail:", error);
-    res.status(500).json({ message: "Erro ao enviar e-mail de recuperação." });
+    console.error("❌ Erro no forgot-password:", error);
+    res.status(500).json({ 
+      message: "Erro ao processar solicitação.",
+      error: error.message 
+    });
   }
 };
 
