@@ -1,10 +1,13 @@
 const nodemailer = require('nodemailer');
 const logger = require('../config/logger');
+const dns = require('dns');
+
+dns.setDefaultResultOrder('ipv4first');
 
 const transporter = nodemailer.createTransport({
-  host: process.env.MAIL_HOST, 
-  port: process.env.MAIL_PORT || 587,
-  secure: process.env.MAIL_PORT == 465,
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.MAIL_USER,
     pass: process.env.MAIL_PASS,
@@ -12,9 +15,10 @@ const transporter = nodemailer.createTransport({
   connectionTimeout: 15000, 
   greetingTimeout: 15000,
   socketTimeout: 15000,
-  family: 4,
+  dnsTimeout: 5000,
   tls: {
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
+    minVersion: 'TLSv1.2'
   }
 });
 
