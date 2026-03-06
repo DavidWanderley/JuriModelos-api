@@ -1,34 +1,28 @@
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 const logger = require('../config/logger');
-const dns = require('dns');
 
-dns.setDefaultResultOrder('ipv4first');
+// Configurar SendGrid
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  logger.info('✅ SendGrid configurado');
+}
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS,
-  },
-  connectionTimeout: 15000, 
-  greetingTimeout: 15000,
-  socketTimeout: 15000,
-  dnsTimeout: 5000,
-  tls: {
-    rejectUnauthorized: false,
-    minVersion: 'TLSv1.2'
+// Função para enviar email
+const sendMail = async (mailOptions) => {
+  try {
+    const msg = {
+      to: mailOptions.to,
+      from: mailOptions.from || process.env.MAIL_USER,
+      subject: mailOptions.subject,
+      html: mailOptions.html,
+    };
+
+    await sgMail.send(msg);
+    return { messageId: 'sendgrid-' + Date.now() };
+  } catch (error) {
+    logger.error('❌ Erro SendGrid:', error.response?.body || error.message);
+    throw error;
   }
-});
+};
 
-// Verificar conexão ao iniciar
-transporter.verify((error, success) => {
-  if (error) {
-    logger.error('❌ Erro na configuração de email:', error);
-  } else {
-    logger.info('✅ Servidor de email pronto para enviar mensagens');
-  }
-});
-
-module.exports = transporter;
+module.exports = { sendMail };

@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const authConfig = require("../config/auth");
 const crypto = require("crypto");
 const { Op } = require("sequelize");
-const mail = require('../services/mail');
+const { sendMail } = require('../services/mail');
 
 exports.register = async (req, res) => {
   try {
@@ -137,7 +137,7 @@ exports.forgotPassword = async (req, res) => {
     console.log(`📧 Enviando email de recuperação para: ${email}`);
 
     try {
-      const info = await mail.sendMail({
+      const info = await sendMail({
         from: `"JuriModelos | CW Advocacia" <${process.env.MAIL_USER}>`,
         to: email,
         subject: "Recuperação de Senha - JuriModelos",
