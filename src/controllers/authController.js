@@ -110,6 +110,11 @@ exports.login = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ message: "E-mail é obrigatório." });
+    }
+
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
@@ -129,9 +134,11 @@ exports.forgotPassword = async (req, res) => {
 
     const linkRecuperacao = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
+    console.log(`📧 Enviando email de recuperação para: ${email}`);
+
     try {
-      await mail.sendMail({
-        from: process.env.MAIL_USER,
+      const info = await mail.sendMail({
+        from: `"JuriModelos | CW Advocacia" <${process.env.MAIL_USER}>`,
         to: email,
         subject: "Recuperação de Senha - JuriModelos",
         html: `
@@ -150,11 +157,20 @@ exports.forgotPassword = async (req, res) => {
           </div>
         `,
       });
+
+      console.log(`✅ Email enviado com sucesso: ${info.messageId}`);
+
     } catch (mailError) {
       console.error("❌ Erro ao enviar email:", mailError);
+      
+      await user.update({
+        resetPasswordToken: null,
+        resetPasswordExpires: null,
+      });
+
       return res.status(500).json({ 
-        message: "Erro ao enviar e-mail. Verifique as configurações de SMTP.",
-        error: mailError.message 
+        message: "Erro ao enviar e-mail. Tente novamente mais tarde.",
+        details: process.env.NODE_ENV === 'development' ? mailError.message : undefined
       });
     }
 
@@ -165,7 +181,7 @@ exports.forgotPassword = async (req, res) => {
     console.error("❌ Erro no forgot-password:", error);
     res.status(500).json({ 
       message: "Erro ao processar solicitação.",
-      error: error.message 
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
