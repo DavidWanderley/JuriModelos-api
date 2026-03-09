@@ -1,52 +1,35 @@
-const nodemailer = require('nodemailer');
-const dns = require('dns');
+const sgMail = require('@sendgrid/mail');
 
-// Forçar IPv4 no Render
-dns.setDefaultResultOrder('ipv4first');
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log('✅ SendGrid configurado');
+} else {
+  console.warn('⚠️ SENDGRID_API_KEY não configurada');
+}
 
-// Configurar transporter do Gmail
-const transporter = nodemailer.createTransport({
-  host: process.env.MAIL_HOST || 'smtp.gmail.com',
-  port: process.env.MAIL_PORT || 587,
-  secure: false, 
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS,
-  },
-  family: 4, // Força IPv4
-  tls: {
-    rejectUnauthorized: false
-  }
-});
-
-// Função para enviar email
 const sendMail = async (mailOptions) => {
   console.log('🔵 [MAIL] Iniciando envio de email...');
   console.log('🔵 [MAIL] Para:', mailOptions.to);
-  console.log('🔵 [MAIL] De:', mailOptions.from || process.env.MAIL_USER);
-  console.log('🔵 [MAIL] MAIL_USER:', process.env.MAIL_USER);
-  console.log('🔵 [MAIL] MAIL_PASS configurado?', !!process.env.MAIL_PASS);
+  console.log('🔵 [MAIL] SendGrid configurado?', !!process.env.SENDGRID_API_KEY);
   
-  if (!process.env.MAIL_USER || !process.env.MAIL_PASS) {
-    const error = new Error('MAIL_USER ou MAIL_PASS não configurados');
-    console.error('❌ [MAIL]', error.message);
-    throw error;
+  if (!process.env.SENDGRID_API_KEY) {
+    throw new Error('SENDGRID_API_KEY não configurada');
   }
   
   try {
-    console.log('🔵 [MAIL] Enviando via Gmail SMTP...');
-    const info = await transporter.sendMail({
-      from: mailOptions.from || `"JuriModelos" <${process.env.MAIL_USER}>`,
+    const msg = {
       to: mailOptions.to,
+      from: mailOptions.from || process.env.MAIL_USER,
       subject: mailOptions.subject,
       html: mailOptions.html,
-    });
-    
-    console.log('✅ [MAIL] Email enviado:', info.messageId);
-    return info;
+    };
+
+    console.log('🔵 [MAIL] Enviando via SendGrid API...');
+    await sgMail.send(msg);
+    console.log('✅ [MAIL] Email enviado com sucesso!');
+    return { messageId: 'sendgrid-' + Date.now() };
   } catch (error) {
-    console.error('❌ [MAIL] Erro:', error.message);
-    console.error('❌ [MAIL] Stack:', error.stack);
+    console.error('❌ [MAIL] Erro:', error.response?.body || error.message);
     throw error;
   }
 };
