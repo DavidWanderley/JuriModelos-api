@@ -1,4 +1,8 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
+
+// Forçar IPv4 no Render
+dns.setDefaultResultOrder('ipv4first');
 
 // Configurar transporter do Gmail
 const transporter = nodemailer.createTransport({
@@ -9,6 +13,7 @@ const transporter = nodemailer.createTransport({
     user: process.env.MAIL_USER,
     pass: process.env.MAIL_PASS,
   },
+  family: 4, // Força IPv4
 });
 
 // Função para enviar email
