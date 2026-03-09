@@ -134,10 +134,8 @@ exports.forgotPassword = async (req, res) => {
 
     const linkRecuperacao = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
-    console.log(`📧 Enviando email de recuperação para: ${email}`);
-
     try {
-      const info = await sendMail({
+      await sendMail({
         from: `"JuriModelos | CW Advocacia" <${process.env.MAIL_USER}>`,
         to: email,
         subject: "Recuperação de Senha - JuriModelos",
@@ -157,12 +155,7 @@ exports.forgotPassword = async (req, res) => {
           </div>
         `,
       });
-
-      console.log(`✅ Email enviado com sucesso: ${info.messageId}`);
-
     } catch (mailError) {
-      console.error("❌ Erro ao enviar email:", mailError);
-      
       await user.update({
         resetPasswordToken: null,
         resetPasswordExpires: null,
