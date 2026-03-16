@@ -1,4 +1,4 @@
-const { User } = require("../models");
+const { User, Role } = require("../models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const authConfig = require("../config/auth");
@@ -39,6 +39,8 @@ exports.register = async (req, res) => {
         .json({ message: `Este ${field} já está cadastrado.` });
     }
 
+    const advogadoRole = await Role.findOne({ where: { name: 'advogado' } });
+
     const user = await User.create({
       nome,
       email,
@@ -55,7 +57,7 @@ exports.register = async (req, res) => {
       bairro,
       cidade,
       estado,
-      perfil: "user",
+      RoleId: advogadoRole?.id || null,
     });
 
     res.status(201).json({
@@ -74,10 +76,21 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ 
+      where: { email },
+      include: [{
+        model: Role,
+        as: 'role',
+        include: ['permissions']
+      }]
+    });
 
     if (!user) {
       return res.status(401).json({ message: "Credenciais inválidas." });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ message: "Usuário desativado. Entre em contato com o administrador." });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -85,10 +98,14 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: "Credenciais inválidas." });
     }
 
+    const permissions = user.role?.permissions?.map(p => p.name) || [];
+
     const token = jwt.sign(
       {
         id: user.id,
-        perfil: user.perfil,
+        roleId: user.RoleId,
+        roleName: user.role?.name,
+        permissions
       },
       authConfig.secret,
       { expiresIn: authConfig.expiresIn },
@@ -97,12 +114,20 @@ exports.login = async (req, res) => {
     res.json({
       token,
       user: {
+        id: user.id,
         nome: user.nome,
         email: user.email,
-        perfil: user.perfil,
+        role: {
+          id: user.role?.id,
+          name: user.role?.name,
+          description: user.role?.description,
+          level: user.role?.level
+        },
+        permissions
       },
     });
   } catch (error) {
+    console.error("Erro no login:", error);
     res.status(500).json({ message: "Erro no servidor", error: error.message });
   }
 };

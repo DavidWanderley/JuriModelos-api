@@ -7,10 +7,13 @@ const User = sequelize.define('User', {
     email: { type: DataTypes.STRING, allowNull: false, unique: true },
     password: { type: DataTypes.STRING, allowNull: false },
     
-    perfil: { 
-        type: DataTypes.STRING, 
-        allowNull: false, 
-        defaultValue: 'user' 
+    RoleId: { 
+        type: DataTypes.INTEGER, 
+        allowNull: true,
+        references: {
+            model: 'roles',
+            key: 'id'
+        }
     },
 
     oab: { type: DataTypes.STRING, allowNull: false },
@@ -26,6 +29,11 @@ const User = sequelize.define('User', {
     bairro: { type: DataTypes.STRING, allowNull: false },
     cidade: { type: DataTypes.STRING, allowNull: false },
     estado: { type: DataTypes.STRING(2), allowNull: false },
+    
+    isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
     
     resetPasswordToken: {
         type: DataTypes.STRING,

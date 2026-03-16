@@ -3,9 +3,11 @@ const express = require('express');
 const corsConfig = require('./config/cors.js'); 
 const { sequelize } = require('./models');
 const modeloRoutes = require('./routes/modeloRoutes.js');
+const templateRoutes = require('./routes/templateRoutes.js');
 const authRoutes = require('./routes/authRoutes.js');
 const documentoRoutes = require('./routes/documentoRoutes.js'); 
 const clienteRoutes = require('./routes/clienteRoutes');
+const userRoutes = require('./routes/userRoutes');
 const statsRoutes = require('./routes/statsRoutes');
 const cepRoutes = require('./routes/cepRoutes');
 const path = require('path');
@@ -30,8 +32,10 @@ app.get('/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/modelos', modeloRoutes);
+app.use('/api/templates', templateRoutes);
 app.use('/api/documentos', documentoRoutes); 
 app.use('/api/clientes', clienteRoutes);
+app.use('/api/usuarios', userRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/buscar-cep', cepRoutes);
 
