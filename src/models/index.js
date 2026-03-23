@@ -1,6 +1,7 @@
 const sequelize = require('../config/database');
 
 // Importar todos os modelos
+const Evento = require('./Evento');
 const User = require('./User');
 const Cliente = require('./Cliente');
 const Modelo = require('./Modelo');
@@ -43,5 +44,6 @@ module.exports = {
   DocumentoGerado,
   Role,
   Permission,
-  RolePermission
+  RolePermission,
+  Evento
 };

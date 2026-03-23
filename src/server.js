@@ -10,6 +10,7 @@ const clienteRoutes = require('./routes/clienteRoutes');
 const userRoutes = require('./routes/userRoutes');
 const statsRoutes = require('./routes/statsRoutes');
 const cepRoutes = require('./routes/cepRoutes');
+const eventoRoutes = require('./routes/eventoRoutes');
 const path = require('path');
 const fs = require('fs');
 
@@ -38,6 +39,7 @@ app.use('/api/clientes', clienteRoutes);
 app.use('/api/usuarios', userRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/buscar-cep', cepRoutes);
+app.use('/api/eventos', eventoRoutes);
 
 app.use('/uploads', express.static(uploadsPath));
 
