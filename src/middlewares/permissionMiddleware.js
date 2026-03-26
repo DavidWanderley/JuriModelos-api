@@ -1,28 +1,17 @@
 const { User, Role, Permission } = require("../models");
 const HTTP_STATUS = require("../util/httpStatus");
 
-/**
-  @param {string} resource 
-  @param {string} action 
- */
 const checkPermission = (resource, action) => {
   return async (req, res, next) => {
     try {
       const userId = req.userId;
 
       const user = await User.findByPk(userId, {
-        include: [
-          {
-            model: Role,
-            as: "role",
-            include: [
-              {
-                model: Permission,
-                as: "permissions",
-              },
-            ],
-          },
-        ],
+        include: [{
+          model: Role,
+          as: "role",
+          include: [{ model: Permission, as: "permissions" }],
+        }],
       });
 
       if (!user || !user.role) {
@@ -47,14 +36,11 @@ const checkPermission = (resource, action) => {
         });
       }
 
-      req.userPermissions = user.role.permissions.map(
-        (p) => `${p.resource}.${p.action}`,
-      );
+      req.userPermissions = user.role.permissions.map((p) => `${p.resource}.${p.action}`);
       req.userRole = user.role.name;
 
       next();
     } catch (error) {
-      console.error("Erro no middleware de permissão:", error);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         message: "Erro ao verificar permissões",
       });
@@ -62,21 +48,13 @@ const checkPermission = (resource, action) => {
   };
 };
 
-/**
-  @param {string[]} allowedRoles 
- */
 const checkRole = (allowedRoles) => {
   return async (req, res, next) => {
     try {
       const userId = req.userId;
 
       const user = await User.findByPk(userId, {
-        include: [
-          {
-            model: Role,
-            as: "role",
-          },
-        ],
+        include: [{ model: Role, as: "role" }],
       });
 
       if (!user || !user.role) {
@@ -94,7 +72,6 @@ const checkRole = (allowedRoles) => {
       req.userRole = user.role.name;
       next();
     } catch (error) {
-      console.error("Erro no middleware de role:", error);
       return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
         message: "Erro ao verificar perfil",
       });
@@ -102,7 +79,4 @@ const checkRole = (allowedRoles) => {
   };
 };
 
-module.exports = {
-  checkPermission,
-  checkRole,
-};
+module.exports = { checkPermission, checkRole };
