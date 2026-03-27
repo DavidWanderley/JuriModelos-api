@@ -13,6 +13,9 @@ const RolePermission = require('./RolePermission');
 User.hasMany(DocumentoGerado, { foreignKey: 'UserId', onDelete: 'CASCADE' });
 DocumentoGerado.belongsTo(User, { foreignKey: 'UserId' });
 
+DocumentoGerado.belongsTo(Cliente, { foreignKey: 'ClienteId', as: 'cliente' });
+Cliente.hasMany(DocumentoGerado, { foreignKey: 'ClienteId' });
+
 User.hasMany(Cliente, { foreignKey: 'UserId', onDelete: 'CASCADE' });
 Cliente.belongsTo(User, { foreignKey: 'UserId' });
 

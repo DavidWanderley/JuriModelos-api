@@ -1,11 +1,11 @@
-const { DocumentoGerado } = require("../models");
+const { DocumentoGerado, Cliente } = require("../models");
 const htmlToDocx = require("html-to-docx");
 const fs = require("fs");
 const path = require("path");
 
 exports.salvarHistorico = async (req, res) => {
   try {
-    const { nome_cliente, conteudo_final, modelo_titulo } = req.body;
+    const { nome_cliente, conteudo_final, modelo_titulo, cliente_id } = req.body;
 
     const nomeTratado = nome_cliente
       ? nome_cliente.replace(/\s+/g, "_").substring(0, 30)
@@ -24,6 +24,7 @@ exports.salvarHistorico = async (req, res) => {
       nome_cliente: nome_cliente || "Não informado",
       caminho_arquivo: `/uploads/gerados/${nomeArquivo}`,
       modelo_titulo: modelo_titulo || "Modelo Avulso",
+      ClienteId: cliente_id || null,
       UserId: req.userId,
     });
 
@@ -40,6 +41,7 @@ exports.listarHistorico = async (req, res) => {
   try {
     const documentos = await DocumentoGerado.findAll({
       where: { UserId: req.userId },
+      include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'nome_completo', 'cpf_cnpj'] }],
       order: [["createdAt", "DESC"]],
     });
     res.json(documentos);
