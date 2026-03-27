@@ -6,7 +6,7 @@ const Cliente = sequelize.define('Cliente', {
   nome_completo: { type: DataTypes.STRING, allowNull: false },
   cpf_cnpj: { type: DataTypes.STRING, unique: true },
   rg: { type: DataTypes.STRING },
-  estado_civil: { type: DataTypes.STRING }, 
+  estado_civil: { type: DataTypes.STRING },
   profissao: { type: DataTypes.STRING },
   nacionalidade: { type: DataTypes.STRING, defaultValue: "Brasileiro(a)" },
   email: { type: DataTypes.STRING },
@@ -19,7 +19,7 @@ const Cliente = sequelize.define('Cliente', {
   bairro: { type: DataTypes.STRING },
   cidade: { type: DataTypes.STRING },
   estado: { type: DataTypes.STRING },
-  endereco_completo: { type: DataTypes.TEXT }, 
+  endereco_completo: { type: DataTypes.TEXT },
 }, {
   tableName: 'clientes',
   timestamps: true,

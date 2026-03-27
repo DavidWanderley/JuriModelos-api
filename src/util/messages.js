@@ -9,6 +9,12 @@ module.exports = {
   NOT_FOUND: 'Recurso não encontrado.',
   INTERNAL_ERROR: 'Erro interno do servidor.',
   UNAUTHORIZED: 'Não autorizado.',
+
+  // Evento (aliases usados pelo eventoController)
+  CREATED: 'Criado com sucesso.',
+  UPDATED: 'Atualizado com sucesso.',
+  DELETED: 'Deletado com sucesso.',
+  ERROR: 'Erro interno do servidor.',
   
   // Cliente
   CLIENTE_NOT_FOUND: 'Cliente não encontrado.',

@@ -11,21 +11,13 @@ exports.salvarHistorico = async (req, res) => {
       ? nome_cliente.replace(/\s+/g, "_").substring(0, 30)
       : "Sem_Nome";
 
-    const timestamp = Date.now();
-    const nomeArquivo = `CW_${timestamp}_${nomeTratado}.docx`;
-
+    const nomeArquivo = `CW_${Date.now()}_${nomeTratado}.docx`;
     const htmlCompleto = `<!DOCTYPE html><html><body style="font-family: Arial;">${conteudo_final}</body></html>`;
-
     const docBuffer = await htmlToDocx(htmlCompleto, null, {
       margin: { top: 1701, right: 1134, bottom: 1134, left: 1701 },
     });
 
-    const caminhoFisico = path.join(
-      __dirname,
-      "../../uploads/gerados",
-      nomeArquivo,
-    );
-
+    const caminhoFisico = path.join(__dirname, "../../uploads/gerados", nomeArquivo);
     fs.writeFileSync(caminhoFisico, docBuffer);
 
     await DocumentoGerado.create({
@@ -40,7 +32,6 @@ exports.salvarHistorico = async (req, res) => {
       downloadUrl: `${process.env.API_URL || 'http://localhost:5000'}/uploads/gerados/${nomeArquivo}`,
     });
   } catch (error) {
-    console.error("Erro na geração do arquivo:", error);
     res.status(500).json({ error: "Falha ao processar e salvar o documento." });
   }
 };
@@ -53,7 +44,6 @@ exports.listarHistorico = async (req, res) => {
     });
     res.json(documentos);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "Erro ao carregar histórico." });
   }
 };

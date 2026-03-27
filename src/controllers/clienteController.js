@@ -6,10 +6,7 @@ const logger = require('../config/logger');
 
 exports.criarCliente = async (req, res) => {
   try {
-    const novoCliente = await Cliente.create({
-      ...req.body,
-      UserId: req.userId 
-    });
+    const novoCliente = await Cliente.create({ ...req.body, UserId: req.userId });
     return ApiResponse.created(res, novoCliente, MESSAGES.CLIENTE_CREATED);
   } catch (error) {
     logger.error('Erro ao cadastrar cliente:', error);
@@ -33,14 +30,8 @@ exports.listarClientes = async (req, res) => {
 exports.buscarCliente = async (req, res) => {
   try {
     const { id } = req.params;
-    const cliente = await Cliente.findOne({
-      where: { id, UserId: req.userId }
-    });
-    
-    if (!cliente) {
-      return ApiResponse.notFound(res, MESSAGES.CLIENTE_NOT_FOUND);
-    }
-    
+    const cliente = await Cliente.findOne({ where: { id, UserId: req.userId } });
+    if (!cliente) return ApiResponse.notFound(res, MESSAGES.CLIENTE_NOT_FOUND);
     return ApiResponse.success(res, cliente);
   } catch (error) {
     logger.error('Erro ao buscar cliente:', error);
@@ -51,14 +42,8 @@ exports.buscarCliente = async (req, res) => {
 exports.atualizarCliente = async (req, res) => {
   try {
     const { id } = req.params;
-    const [updated] = await Cliente.update(req.body, {
-      where: { id, UserId: req.userId }
-    });
-    
-    if (!updated) {
-      return ApiResponse.notFound(res, MESSAGES.CLIENTE_NOT_FOUND);
-    }
-    
+    const [updated] = await Cliente.update(req.body, { where: { id, UserId: req.userId } });
+    if (!updated) return ApiResponse.notFound(res, MESSAGES.CLIENTE_NOT_FOUND);
     const clienteAtualizado = await Cliente.findByPk(id);
     return ApiResponse.success(res, clienteAtualizado, MESSAGES.CLIENTE_UPDATED);
   } catch (error) {
@@ -70,14 +55,8 @@ exports.atualizarCliente = async (req, res) => {
 exports.deletarCliente = async (req, res) => {
   try {
     const { id } = req.params;
-    const deleted = await Cliente.destroy({
-      where: { id, UserId: req.userId }
-    });
-    
-    if (!deleted) {
-      return ApiResponse.notFound(res, MESSAGES.CLIENTE_NOT_FOUND);
-    }
-    
+    const deleted = await Cliente.destroy({ where: { id, UserId: req.userId } });
+    if (!deleted) return ApiResponse.notFound(res, MESSAGES.CLIENTE_NOT_FOUND);
     return ApiResponse.noContent(res);
   } catch (error) {
     logger.error('Erro ao deletar cliente:', error);
