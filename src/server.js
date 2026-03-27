@@ -12,6 +12,7 @@ const statsRoutes = require('./routes/statsRoutes');
 const cepRoutes = require('./routes/cepRoutes');
 const eventoRoutes = require('./routes/eventoRoutes');
 const errorHandler = require('./middlewares/errorHandler');
+const { iniciarNotificacoes } = require('./services/notificacoes');
 const path = require('path');
 const fs = require('fs');
 
@@ -46,7 +47,10 @@ app.use(errorHandler);
 sequelize.sync({ alter: true })
     .then(() => {
         const PORT = process.env.PORT || 10000;
-        app.listen(PORT, () => console.log(`🚀 JuriModelos rodando na porta ${PORT}`));
+        app.listen(PORT, () => {
+          console.log(`🚀 JuriModelos rodando na porta ${PORT}`);
+          iniciarNotificacoes();
+        });
     })
     .catch(err => {
         console.error('🔴 Erro ao sincronizar banco:', err);
