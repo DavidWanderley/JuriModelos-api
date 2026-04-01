@@ -161,14 +161,14 @@ exports.forgotPassword = async (req, res) => {
 
     try {
       await sendMail({
-        from: `"JuriModelos | CW Advocacia" <${process.env.MAIL_USER}>`,
+        from: `"JuriModelos" <${process.env.MAIL_USER}>`,
         to: email,
         subject: "Recuperação de Senha - JuriModelos",
         html: `
           <div style="font-family: sans-serif; color: #0e1e3f; max-width: 600px;">
             <h1 style="color: #f59e0b;">JuriModelos</h1>
             <p>Olá, <strong>${user.nome}</strong>,</p>
-            <p>Recebemos uma solicitação para redefinir a senha da sua conta na <strong>CW Advocacia</strong>.</p>
+            <p>Recebemos uma solicitação para redefinir a senha da sua conta no <strong>JuriModelos</strong>.</p>
             <p>Para prosseguir, clique no botão abaixo (válido por 1 hora):</p>
             <a href="${linkRecuperacao}" 
                style="background-color: #0e1e3f; color: white; padding: 15px 25px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block;">
@@ -230,7 +230,7 @@ exports.resetPassword = async (req, res) => {
     await user.save();
 
     return res.status(200).json({ 
-      message: "Senha atualizada com sucesso! A CW Advocacia agradece a sua segurança." 
+      message: "Senha atualizada com sucesso!" 
     });
 
   } catch (error) {

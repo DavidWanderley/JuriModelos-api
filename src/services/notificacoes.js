@@ -39,7 +39,7 @@ const buildEmailHtml = (nomeUsuario, eventos, modelosAudiencia) => {
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f8fafc;">
       <div style="background: #0e1e3f; padding: 32px; text-align: center;">
         <h1 style="color: #f59e0b; margin: 0; font-size: 24px;">JuriModelos</h1>
-        <p style="color: #94a3b8; margin: 8px 0 0; font-size: 14px;">CW Advocacia</p>
+        <p style="color: #94a3b8; margin: 8px 0 0; font-size: 14px;">Plataforma Jurídica</p>
       </div>
 
       <div style="padding: 32px;">
@@ -70,7 +70,7 @@ const buildEmailHtml = (nomeUsuario, eventos, modelosAudiencia) => {
       </div>
 
       <div style="padding: 20px 32px; text-align:center; font-size:12px; color:#94a3b8; border-top: 1px solid #e2e8f0;">
-        © ${new Date().getFullYear()} CW Advocacia · JuriModelos
+        © ${new Date().getFullYear()} JuriModelos
       </div>
     </div>
   `;
@@ -112,7 +112,6 @@ const enviarNotificacoesAmanha = async () => {
 };
 
 const iniciarNotificacoes = () => {
-  // Roda todo dia às 20h
   cron.schedule('0 20 * * *', enviarNotificacoesAmanha, { timezone: 'America/Fortaleza' });
 };
 

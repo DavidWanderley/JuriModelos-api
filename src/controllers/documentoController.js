@@ -11,7 +11,7 @@ exports.salvarHistorico = async (req, res) => {
       ? nome_cliente.replace(/\s+/g, "_").substring(0, 30)
       : "Sem_Nome";
 
-    const nomeArquivo = `CW_${Date.now()}_${nomeTratado}.docx`;
+    const nomeArquivo = `DOC_${Date.now()}_${nomeTratado}.docx`;
     const htmlCompleto = `<!DOCTYPE html><html><body style="font-family: Arial;">${conteudo_final}</body></html>`;
     const docBuffer = await htmlToDocx(htmlCompleto, null, {
       margin: { top: 1701, right: 1134, bottom: 1134, left: 1701 },
