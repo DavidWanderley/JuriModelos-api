@@ -15,6 +15,11 @@ const Modelo = sequelize.define("Modelo", {
   data_audiencia: { type: DataTypes.STRING, allowNull: true },
   hora_audiencia: { type: DataTypes.STRING, allowNull: true },
   pdf_url: { type: DataTypes.STRING, allowNull: true },
+  EscritorioId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: { model: 'escritorios', key: 'id' }
+  },
 });
 
 module.exports = Modelo;

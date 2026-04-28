@@ -20,6 +20,11 @@ const Cliente = sequelize.define('Cliente', {
   cidade: { type: DataTypes.STRING },
   estado: { type: DataTypes.STRING },
   endereco_completo: { type: DataTypes.TEXT },
+  EscritorioId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: { model: 'escritorios', key: 'id' }
+  },
 }, {
   tableName: 'clientes',
   timestamps: true,

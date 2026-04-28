@@ -26,6 +26,7 @@ exports.salvarHistorico = async (req, res) => {
       modelo_titulo: modelo_titulo || "Modelo Avulso",
       ClienteId: cliente_id || null,
       UserId: req.userId,
+      EscritorioId: req.escritorioId,
     });
 
     res.status(201).json({
@@ -40,7 +41,7 @@ exports.salvarHistorico = async (req, res) => {
 exports.listarHistorico = async (req, res) => {
   try {
     const documentos = await DocumentoGerado.findAll({
-      where: { UserId: req.userId },
+      where: { EscritorioId: req.escritorioId },
       include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'nome_completo', 'cpf_cnpj'] }],
       order: [["createdAt", "DESC"]],
     });

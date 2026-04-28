@@ -7,31 +7,31 @@ const logger = require('../config/logger');
 exports.getStats = async (req, res) => {
   try {
     const [totalClientes, totalDocumentos, totalModelos, totalTemplates] = await Promise.all([
-      Cliente.count({ where: { UserId: req.userId } }),
-      DocumentoGerado.count({ where: { UserId: req.userId } }),
-      Modelo.count(),
-      Template.count()
+      Cliente.count({ where: { EscritorioId: req.escritorioId } }),
+      DocumentoGerado.count({ where: { EscritorioId: req.escritorioId } }),
+      Modelo.count({ where: { EscritorioId: req.escritorioId } }),
+      Template.count({ where: { EscritorioId: req.escritorioId } })
     ]);
 
     const documentosPorMes = await sequelize.query(`
       SELECT 
         TO_CHAR("createdAt", 'YYYY-MM') AS mes,
         COUNT(*) AS total
-      FROM "DocumentoGerados"
-      WHERE "UserId" = :userId
+      FROM documentos_gerados
+      WHERE "EscritorioId" = :escritorioId
         AND "createdAt" >= NOW() - INTERVAL '6 months'
       GROUP BY mes
       ORDER BY mes ASC
-    `, { replacements: { userId: req.userId }, type: QueryTypes.SELECT });
+    `, { replacements: { escritorioId: req.escritorioId }, type: QueryTypes.SELECT });
 
     const clientesPorCidade = await sequelize.query(`
       SELECT cidade, COUNT(*) AS total
-      FROM "Clientes"
-      WHERE "UserId" = :userId AND cidade IS NOT NULL AND cidade != ''
+      FROM clientes
+      WHERE "EscritorioId" = :escritorioId AND cidade IS NOT NULL AND cidade != ''
       GROUP BY cidade
       ORDER BY total DESC
       LIMIT 5
-    `, { replacements: { userId: req.userId }, type: QueryTypes.SELECT });
+    `, { replacements: { escritorioId: req.escritorioId }, type: QueryTypes.SELECT });
 
     return ApiResponse.success(res, {
       totalClientes,

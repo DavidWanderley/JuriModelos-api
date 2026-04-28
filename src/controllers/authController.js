@@ -105,6 +105,7 @@ exports.login = async (req, res) => {
         id: user.id,
         roleId: user.RoleId,
         roleName: user.role?.name,
+        escritorioId: user.EscritorioId || null,
         permissions
       },
       authConfig.secret,
@@ -117,6 +118,7 @@ exports.login = async (req, res) => {
         id: user.id,
         nome: user.nome,
         email: user.email,
+        escritorioId: user.EscritorioId || null,
         role: {
           id: user.role?.id,
           name: user.role?.name,

@@ -11,6 +11,7 @@ const userRoutes = require('./routes/userRoutes');
 const statsRoutes = require('./routes/statsRoutes');
 const cepRoutes = require('./routes/cepRoutes');
 const eventoRoutes = require('./routes/eventoRoutes');
+const escritorioRoutes = require('./routes/escritorioRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 const { iniciarNotificacoes } = require('./services/notificacoes');
 const path = require('path');
@@ -41,6 +42,7 @@ app.use('/api/usuarios', userRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/buscar-cep', cepRoutes);
 app.use('/api/eventos', eventoRoutes);
+app.use('/api/escritorios', escritorioRoutes);
 app.use('/uploads', express.static(uploadsPath));
 app.use(errorHandler);
 

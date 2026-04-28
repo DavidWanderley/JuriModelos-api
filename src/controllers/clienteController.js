@@ -6,7 +6,7 @@ const logger = require('../config/logger');
 
 exports.criarCliente = async (req, res) => {
   try {
-    const novoCliente = await Cliente.create({ ...req.body, UserId: req.userId });
+    const novoCliente = await Cliente.create({ ...req.body, UserId: req.userId, EscritorioId: req.escritorioId });
     return ApiResponse.created(res, novoCliente, MESSAGES.CLIENTE_CREATED);
   } catch (error) {
     logger.error('Erro ao cadastrar cliente:', error);
@@ -17,7 +17,7 @@ exports.criarCliente = async (req, res) => {
 exports.listarClientes = async (req, res) => {
   try {
     const clientes = await Cliente.findAll({
-      where: { UserId: req.userId },
+      where: { EscritorioId: req.escritorioId },
       order: [['nome_completo', 'ASC']]
     });
     return ApiResponse.success(res, clientes);
@@ -30,7 +30,7 @@ exports.listarClientes = async (req, res) => {
 exports.buscarCliente = async (req, res) => {
   try {
     const { id } = req.params;
-    const cliente = await Cliente.findOne({ where: { id, UserId: req.userId } });
+    const cliente = await Cliente.findOne({ where: { id, EscritorioId: req.escritorioId } });
     if (!cliente) return ApiResponse.notFound(res, MESSAGES.CLIENTE_NOT_FOUND);
     return ApiResponse.success(res, cliente);
   } catch (error) {
@@ -42,7 +42,7 @@ exports.buscarCliente = async (req, res) => {
 exports.atualizarCliente = async (req, res) => {
   try {
     const { id } = req.params;
-    const [updated] = await Cliente.update(req.body, { where: { id, UserId: req.userId } });
+    const [updated] = await Cliente.update(req.body, { where: { id, EscritorioId: req.escritorioId } });
     if (!updated) return ApiResponse.notFound(res, MESSAGES.CLIENTE_NOT_FOUND);
     const clienteAtualizado = await Cliente.findByPk(id);
     return ApiResponse.success(res, clienteAtualizado, MESSAGES.CLIENTE_UPDATED);
@@ -55,7 +55,7 @@ exports.atualizarCliente = async (req, res) => {
 exports.deletarCliente = async (req, res) => {
   try {
     const { id } = req.params;
-    const deleted = await Cliente.destroy({ where: { id, UserId: req.userId } });
+    const deleted = await Cliente.destroy({ where: { id, EscritorioId: req.escritorioId } });
     if (!deleted) return ApiResponse.notFound(res, MESSAGES.CLIENTE_NOT_FOUND);
     return ApiResponse.noContent(res);
   } catch (error) {

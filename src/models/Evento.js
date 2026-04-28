@@ -19,6 +19,16 @@ const Evento = sequelize.define("Evento", {
     type: DataTypes.ENUM("pendente", "concluido", "cancelado"),
     defaultValue: "pendente",
   },
+  UserId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: { model: 'Users', key: 'id' }
+  },
+  EscritorioId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: { model: 'escritorios', key: 'id' }
+  },
 });
 
 module.exports = Evento;

@@ -23,8 +23,10 @@ module.exports = (req, res, next) => {
       return res.status(401).json({ message: "Token inválido ou expirado." });
     }
 
-    req.user = decoded; 
+    req.user = decoded;
     req.userId = decoded.id;
+    req.escritorioId = decoded.escritorioId || null;
+    req.userRole = decoded.roleName || null;
 
     const now = Math.floor(Date.now() / 1000);
     const timeUntilExpiry = decoded.exp - now;

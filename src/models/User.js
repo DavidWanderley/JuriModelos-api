@@ -10,10 +10,12 @@ const User = sequelize.define('User', {
     RoleId: { 
         type: DataTypes.INTEGER, 
         allowNull: true,
-        references: {
-            model: 'roles',
-            key: 'id'
-        }
+        references: { model: 'roles', key: 'id' }
+    },
+    EscritorioId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: 'escritorios', key: 'id' }
     },
 
     oab: { type: DataTypes.STRING, allowNull: false },
