@@ -149,9 +149,50 @@ exports.listarTodos = async (req, res) => {
       include: [{ model: User, attributes: ['id', 'nome', 'email'], as: 'membros' }],
       order: [['createdAt', 'DESC']]
     });
-    return ApiResponse.success(res, escritorios);
+
+    const resultado = await Promise.all(escritorios.map(async (e) => {
+      const [clientes, documentos, eventos] = await Promise.all([
+        Cliente.count({ where: { EscritorioId: e.id } }),
+        DocumentoGerado.count({ where: { EscritorioId: e.id } }),
+        Evento.count({ where: { EscritorioId: e.id } }),
+      ]);
+      return {
+        ...e.toJSON(),
+        totais: { clientes, documentos, eventos, membros: e.membros.length },
+      };
+    }));
+
+    return ApiResponse.success(res, resultado);
   } catch (error) {
     return ApiResponse.error(res, 'Erro ao listar escritórios.', HTTP_STATUS.INTERNAL_SERVER_ERROR, error.message);
+  }
+};
+
+// admin_site: detalhe de um escritório específico
+exports.detalharEscritorio = async (req, res) => {
+  try {
+    const escritorio = await Escritorio.findByPk(req.params.id, {
+      include: [{
+        model: User,
+        as: 'membros',
+        attributes: ['id', 'nome', 'email', 'oab', 'isActive', 'createdAt'],
+        include: [{ model: Role, as: 'role', attributes: ['id', 'name'] }],
+      }],
+    });
+    if (!escritorio) return ApiResponse.notFound(res, 'Escritório não encontrado.');
+
+    const [clientes, documentos, eventos] = await Promise.all([
+      Cliente.count({ where: { EscritorioId: escritorio.id } }),
+      DocumentoGerado.count({ where: { EscritorioId: escritorio.id } }),
+      Evento.count({ where: { EscritorioId: escritorio.id } }),
+    ]);
+
+    return ApiResponse.success(res, {
+      ...escritorio.toJSON(),
+      totais: { clientes, documentos, eventos, membros: escritorio.membros.length },
+    });
+  } catch (error) {
+    return ApiResponse.error(res, 'Erro ao detalhar escritório.', HTTP_STATUS.INTERNAL_SERVER_ERROR, error.message);
   }
 };
 

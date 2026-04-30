@@ -18,6 +18,7 @@ router.delete('/meu/membros/:membroId', checkRole(['admin_escritorio']), escrito
 
 // admin_site apenas
 router.get('/', checkRole(['admin_site']), escritorioController.listarTodos);
+router.get('/:id', checkRole(['admin_site']), escritorioController.detalharEscritorio);
 router.patch('/:id/toggle', checkRole(['admin_site']), escritorioController.toggleAtivo);
 
 module.exports = router;
