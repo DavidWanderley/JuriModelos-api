@@ -9,5 +9,7 @@ router.post('/login', loginSlowDown, loginRateLimit, authController.login);
 
 router.post('/forgot-password', loginRateLimit, authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
+router.post('/aceitar-convite', authController.aceitarConvite);
+router.post('/aceitar-convite', authController.aceitarConvite);
 
 module.exports = router;
