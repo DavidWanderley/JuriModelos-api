@@ -11,6 +11,10 @@ router.post('/', escritorioController.criar);
 router.get('/meu', escritorioController.buscar);
 router.put('/meu', checkRole(['admin_escritorio']), escritorioController.atualizar);
 router.post('/meu/convidar', checkRole(['admin_escritorio']), authController.convidarMembro);
+router.get('/meu/painel', checkRole(['admin_escritorio']), escritorioController.painel);
+router.put('/meu/membros/:membroId/role', checkRole(['admin_escritorio']), escritorioController.atualizarMembroRole);
+router.patch('/meu/membros/:membroId/toggle', checkRole(['admin_escritorio']), escritorioController.toggleMembroStatus);
+router.delete('/meu/membros/:membroId', checkRole(['admin_escritorio']), escritorioController.removerMembro);
 
 // admin_site apenas
 router.get('/', checkRole(['admin_site']), escritorioController.listarTodos);
