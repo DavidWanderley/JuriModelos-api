@@ -18,7 +18,7 @@ const User = sequelize.define('User', {
         references: { model: 'escritorios', key: 'id' }
     },
 
-    oab: { type: DataTypes.STRING, allowNull: false },
+    oab: { type: DataTypes.STRING, allowNull: true },
     cpf: { type: DataTypes.STRING, allowNull: false, unique: true },
     telefone: { type: DataTypes.STRING, allowNull: false },
     sexo: { type: DataTypes.STRING },
