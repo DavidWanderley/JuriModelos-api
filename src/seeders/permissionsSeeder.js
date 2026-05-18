@@ -53,9 +53,11 @@ const seedPermissionsAndRoles = async () => {
     console.log(`✅ ${permissions.length} permissões criadas/verificadas`);
 
     const roles = [
-      { name: 'admin', description: 'Administrador - Acesso total ao sistema', level: 100 },
+      { name: 'admin_site', description: 'Administrador do site - Acesso total ao sistema', level: 100 },
+      { name: 'admin_escritorio', description: 'Administrador do escritório - Gerencia seu escritório', level: 75 },
       { name: 'advogado', description: 'Advogado - Acesso completo aos recursos jurídicos', level: 50 },
-      { name: 'estagiario', description: 'Estagiário - Acesso limitado para consulta', level: 10 },
+      { name: 'estagiario', description: 'Estagiário - Acesso limitado para consulta', level: 20 },
+      { name: 'funcionario', description: 'Funcionário - Acesso conforme permissões do escritório', level: 10 },
     ];
 
     for (const role of roles) {
@@ -67,24 +69,39 @@ const seedPermissionsAndRoles = async () => {
 
     console.log(`✅ ${roles.length} perfis criados/verificados`);
 
-    const adminRole = await Role.findOne({ where: { name: 'admin' } });
+    const adminSiteRole = await Role.findOne({ where: { name: 'admin_site' } });
+    const adminEscritorioRole = await Role.findOne({ where: { name: 'admin_escritorio' } });
     const advogadoRole = await Role.findOne({ where: { name: 'advogado' } });
     const estagiarioRole = await Role.findOne({ where: { name: 'estagiario' } });
+    const funcionarioRole = await Role.findOne({ where: { name: 'funcionario' } });
 
     const allPermissions = await Permission.findAll();
 
-    await adminRole.setPermissions(allPermissions);
+    // admin_site: tudo
+    await adminSiteRole.setPermissions(allPermissions);
 
-    const advogadoPermissions = allPermissions.filter(p => 
-      !p.resource.includes('usuarios') && !p.resource.includes('config')
+    // admin_escritorio: tudo exceto config do sistema
+    const adminEscritorioPermissions = allPermissions.filter(p => p.resource !== 'config');
+    await adminEscritorioRole.setPermissions(adminEscritorioPermissions);
+
+    // advogado: tudo exceto usuarios e config
+    const advogadoPermissions = allPermissions.filter(p =>
+      !['usuarios', 'config'].includes(p.resource)
     );
     await advogadoRole.setPermissions(advogadoPermissions);
 
-    const estagiarioPermissions = allPermissions.filter(p => 
+    // estagiario: leitura + gerar documentos
+    const estagiarioPermissions = allPermissions.filter(p =>
       (p.action === 'read' || p.action === 'list') ||
       (p.resource === 'documentos' && p.action === 'create')
     );
     await estagiarioRole.setPermissions(estagiarioPermissions);
+
+    // funcionario: apenas leitura
+    const funcionarioPermissions = allPermissions.filter(p =>
+      p.action === 'read' || p.action === 'list'
+    );
+    await funcionarioRole.setPermissions(funcionarioPermissions);
 
     console.log('✅ Permissões atribuídas aos perfis');
     console.log('🎉 Seed concluído com sucesso!');

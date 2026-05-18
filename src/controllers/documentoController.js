@@ -1,17 +1,17 @@
-const { DocumentoGerado } = require("../models");
+const { DocumentoGerado, Cliente } = require("../models");
 const htmlToDocx = require("html-to-docx");
 const fs = require("fs");
 const path = require("path");
 
 exports.salvarHistorico = async (req, res) => {
   try {
-    const { nome_cliente, conteudo_final, modelo_titulo } = req.body;
+    const { nome_cliente, conteudo_final, modelo_titulo, cliente_id } = req.body;
 
     const nomeTratado = nome_cliente
       ? nome_cliente.replace(/\s+/g, "_").substring(0, 30)
       : "Sem_Nome";
 
-    const nomeArquivo = `CW_${Date.now()}_${nomeTratado}.docx`;
+    const nomeArquivo = `DOC_${Date.now()}_${nomeTratado}.docx`;
     const htmlCompleto = `<!DOCTYPE html><html><body style="font-family: Arial;">${conteudo_final}</body></html>`;
     const docBuffer = await htmlToDocx(htmlCompleto, null, {
       margin: { top: 1701, right: 1134, bottom: 1134, left: 1701 },
@@ -24,7 +24,9 @@ exports.salvarHistorico = async (req, res) => {
       nome_cliente: nome_cliente || "Não informado",
       caminho_arquivo: `/uploads/gerados/${nomeArquivo}`,
       modelo_titulo: modelo_titulo || "Modelo Avulso",
+      ClienteId: cliente_id || null,
       UserId: req.userId,
+      EscritorioId: req.escritorioId,
     });
 
     res.status(201).json({
@@ -39,7 +41,8 @@ exports.salvarHistorico = async (req, res) => {
 exports.listarHistorico = async (req, res) => {
   try {
     const documentos = await DocumentoGerado.findAll({
-      where: { UserId: req.userId },
+      where: { EscritorioId: req.escritorioId },
+      include: [{ model: Cliente, as: 'cliente', attributes: ['id', 'nome_completo', 'cpf_cnpj'] }],
       order: [["createdAt", "DESC"]],
     });
     res.json(documentos);

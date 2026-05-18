@@ -6,7 +6,7 @@ const messages = require("../util/messages");
 
 exports.createEvento = async (req, res) => {
   try {
-    const evento = await Evento.create(req.body);
+    const evento = await Evento.create({ ...req.body, UserId: req.userId, EscritorioId: req.escritorioId });
     return ApiResponse.success(res, evento, messages.CREATED, httpStatus.CREATED);
   } catch (error) {
     return ApiResponse.error(res, messages.ERROR, httpStatus.INTERNAL_SERVER_ERROR, error.message);
@@ -16,7 +16,7 @@ exports.createEvento = async (req, res) => {
 exports.getAllEventos = async (req, res) => {
   try {
     const { mes, ano } = req.query;
-    const where = {};
+    const where = { EscritorioId: req.escritorioId };
 
     if (mes && ano) {
       const inicio = `${ano}-${String(mes).padStart(2, "0")}-01`;
@@ -33,7 +33,7 @@ exports.getAllEventos = async (req, res) => {
 
 exports.getEventoById = async (req, res) => {
   try {
-    const evento = await Evento.findByPk(req.params.id);
+    const evento = await Evento.findOne({ where: { id: req.params.id, EscritorioId: req.escritorioId } });
     if (!evento) return ApiResponse.error(res, messages.NOT_FOUND, httpStatus.NOT_FOUND);
     return ApiResponse.success(res, evento);
   } catch (error) {
@@ -45,7 +45,7 @@ exports.getProximos = async (req, res) => {
   try {
     const hoje = new Date().toISOString().split("T")[0];
     const eventos = await Evento.findAll({
-      where: { data: { [Op.gte]: hoje }, status: "pendente" },
+      where: { data: { [Op.gte]: hoje }, status: "pendente", EscritorioId: req.escritorioId },
       order: [["data", "ASC"], ["hora", "ASC"]],
       limit: 10,
     });
@@ -57,7 +57,7 @@ exports.getProximos = async (req, res) => {
 
 exports.updateEvento = async (req, res) => {
   try {
-    const evento = await Evento.findByPk(req.params.id);
+    const evento = await Evento.findOne({ where: { id: req.params.id, EscritorioId: req.escritorioId } });
     if (!evento) return ApiResponse.error(res, messages.NOT_FOUND, httpStatus.NOT_FOUND);
     await evento.update(req.body);
     return ApiResponse.success(res, evento, messages.UPDATED);
@@ -68,7 +68,7 @@ exports.updateEvento = async (req, res) => {
 
 exports.deleteEvento = async (req, res) => {
   try {
-    const evento = await Evento.findByPk(req.params.id);
+    const evento = await Evento.findOne({ where: { id: req.params.id, EscritorioId: req.escritorioId } });
     if (!evento) return ApiResponse.error(res, messages.NOT_FOUND, httpStatus.NOT_FOUND);
     await evento.destroy();
     return ApiResponse.success(res, null, messages.DELETED);

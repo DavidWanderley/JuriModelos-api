@@ -9,6 +9,11 @@ const Template = sequelize.define("Template", {
   variaveis: { type: DataTypes.JSON, allowNull: true },
   tags: { type: DataTypes.STRING, allowNull: true },
   isAtivo: { type: DataTypes.BOOLEAN, defaultValue: true },
+  EscritorioId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: { model: 'escritorios', key: 'id' }
+  },
 });
 
 module.exports = Template;

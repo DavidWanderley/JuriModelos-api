@@ -1,4 +1,4 @@
-const { User, Role } = require("../models");
+const { User, Role, Escritorio } = require("../models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const authConfig = require("../config/auth");
@@ -9,66 +9,39 @@ const { sendMail } = require('../services/mail');
 exports.register = async (req, res) => {
   try {
     const {
-      nome,
-      email,
-      senha,
-      oab,
-      cpf,
-      telefone,
-      sexo,
-      nacionalidade,
-      cep,
-      endereco,
-      numero,
-      complemento,
-      bairro,
-      cidade,
-      estado,
+      nome, email, senha, oab, cpf, telefone, sexo, nacionalidade,
+      cep, endereco, numero, complemento, bairro, cidade, estado,
+      nome_escritorio,
     } = req.body;
 
-    const userExists = await User.findOne({
-      where: {
-        [Op.or]: [{ email }, { cpf }],
-      },
-    });
-
+    const userExists = await User.findOne({ where: { [Op.or]: [{ email }, { cpf }] } });
     if (userExists) {
       const field = userExists.email === email ? "E-mail" : "CPF";
-      return res
-        .status(400)
-        .json({ message: `Este ${field} já está cadastrado.` });
+      return res.status(400).json({ message: `Este ${field} já está cadastrado.` });
     }
 
-    const advogadoRole = await Role.findOne({ where: { name: 'advogado' } });
+    const adminEscritorioRole = await Role.findOne({ where: { name: 'admin_escritorio' } });
+
+    // Cria o escritório junto com o registro
+    const escritorio = await Escritorio.create({
+      nome: nome_escritorio || `Escritório de ${nome}`,
+    });
 
     const user = await User.create({
-      nome,
-      email,
-      password: senha,
-      oab,
-      cpf,
-      telefone,
-      sexo,
-      nacionalidade,
-      cep,
-      endereco,
-      numero,
-      complemento,
-      bairro,
-      cidade,
-      estado,
-      RoleId: advogadoRole?.id || null,
+      nome, email, password: senha, oab, cpf, telefone, sexo, nacionalidade,
+      cep, endereco, numero, complemento, bairro, cidade, estado,
+      RoleId: adminEscritorioRole?.id || null,
+      EscritorioId: escritorio.id,
     });
 
     res.status(201).json({
-      message: "Advogado registrado com sucesso!",
+      message: "Cadastro realizado com sucesso!",
       user: { id: user.id, nome: user.nome, email: user.email },
+      escritorio: { id: escritorio.id, nome: escritorio.nome },
     });
   } catch (error) {
     console.error("Erro no Registro:", error);
-    res
-      .status(500)
-      .json({ message: "Erro ao registrar usuário", error: error.message });
+    res.status(500).json({ message: "Erro ao registrar usuário", error: error.message });
   }
 };
 
@@ -105,6 +78,7 @@ exports.login = async (req, res) => {
         id: user.id,
         roleId: user.RoleId,
         roleName: user.role?.name,
+        escritorioId: user.EscritorioId || null,
         permissions
       },
       authConfig.secret,
@@ -117,6 +91,7 @@ exports.login = async (req, res) => {
         id: user.id,
         nome: user.nome,
         email: user.email,
+        escritorioId: user.EscritorioId || null,
         role: {
           id: user.role?.id,
           name: user.role?.name,
@@ -161,14 +136,14 @@ exports.forgotPassword = async (req, res) => {
 
     try {
       await sendMail({
-        from: `"JuriModelos | CW Advocacia" <${process.env.MAIL_USER}>`,
+        from: `"JuriModelos" <${process.env.MAIL_USER}>`,
         to: email,
         subject: "Recuperação de Senha - JuriModelos",
         html: `
           <div style="font-family: sans-serif; color: #0e1e3f; max-width: 600px;">
             <h1 style="color: #f59e0b;">JuriModelos</h1>
             <p>Olá, <strong>${user.nome}</strong>,</p>
-            <p>Recebemos uma solicitação para redefinir a senha da sua conta na <strong>CW Advocacia</strong>.</p>
+            <p>Recebemos uma solicitação para redefinir a senha da sua conta no <strong>JuriModelos</strong>.</p>
             <p>Para prosseguir, clique no botão abaixo (válido por 1 hora):</p>
             <a href="${linkRecuperacao}" 
                style="background-color: #0e1e3f; color: white; padding: 15px 25px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block;">
@@ -230,7 +205,7 @@ exports.resetPassword = async (req, res) => {
     await user.save();
 
     return res.status(200).json({ 
-      message: "Senha atualizada com sucesso! A CW Advocacia agradece a sua segurança." 
+      message: "Senha atualizada com sucesso!" 
     });
 
   } catch (error) {
@@ -239,5 +214,84 @@ exports.resetPassword = async (req, res) => {
       message: "Erro interno ao redefinir senha.", 
       error: error.message 
     });
+  }
+};
+
+exports.convidarMembro = async (req, res) => {
+  try {
+    const { email, roleId } = req.body;
+    if (!email) return res.status(400).json({ message: "E-mail é obrigatório." });
+
+    const escritorio = await Escritorio.findByPk(req.escritorioId);
+    if (!escritorio) return res.status(404).json({ message: "Escritório não encontrado." });
+
+    const userExistente = await User.findOne({ where: { email } });
+    if (userExistente) {
+      if (userExistente.EscritorioId) {
+        return res.status(400).json({ message: "Este usuário já pertence a um escritório." });
+      }
+      await userExistente.update({ EscritorioId: req.escritorioId, RoleId: roleId || userExistente.RoleId });
+      return res.status(200).json({ message: "Usuário vinculado ao escritório com sucesso." });
+    }
+
+    const token = crypto.randomBytes(20).toString("hex");
+    const linkConvite = `${process.env.FRONTEND_URL}/aceitar-convite/${token}?escritorioId=${escritorio.id}&roleId=${roleId || ''}`;
+
+    await sendMail({
+      from: `"JuriModelos" <${process.env.MAIL_USER}>`,
+      to: email,
+      subject: `Convite para ${escritorio.nome} - JuriModelos`,
+      html: `
+        <div style="font-family: sans-serif; color: #0e1e3f; max-width: 600px;">
+          <h1 style="color: #f59e0b;">JuriModelos</h1>
+          <p>Você foi convidado para fazer parte do escritório <strong>${escritorio.nome}</strong>.</p>
+          <p>Clique no botão abaixo para aceitar o convite e criar sua conta (válido por 48 horas):</p>
+          <a href="${linkConvite}" style="background-color: #0e1e3f; color: white; padding: 15px 25px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block;">
+            Aceitar Convite
+          </a>
+          <p style="margin-top: 30px; font-size: 12px; color: #64748b;">Se você não esperava este convite, ignore este e-mail.</p>
+        </div>
+      `,
+    });
+
+    res.status(200).json({ message: "Convite enviado com sucesso." });
+  } catch (error) {
+    console.error("Erro ao convidar membro:", error);
+    res.status(500).json({ message: "Erro ao enviar convite.", error: error.message });
+  }
+};
+
+exports.aceitarConvite = async (req, res) => {
+  try {
+    const {
+      nome, email, senha, oab, cpf, telefone, sexo, nacionalidade,
+      cep, endereco, numero, complemento, bairro, cidade, estado,
+      escritorioId, roleId,
+    } = req.body;
+
+    const escritorio = await Escritorio.findByPk(escritorioId);
+    if (!escritorio || !escritorio.isActive) {
+      return res.status(400).json({ message: "Escritório inválido ou inativo." });
+    }
+
+    const userExists = await User.findOne({ where: { [Op.or]: [{ email }, { cpf }] } });
+    if (userExists) return res.status(400).json({ message: "E-mail ou CPF já cadastrado." });
+
+    const role = roleId ? await Role.findByPk(roleId) : await Role.findOne({ where: { name: 'advogado' } });
+
+    const user = await User.create({
+      nome, email, password: senha, oab, cpf, telefone, sexo, nacionalidade,
+      cep, endereco, numero, complemento, bairro, cidade, estado,
+      RoleId: role?.id || null,
+      EscritorioId: escritorioId,
+    });
+
+    res.status(201).json({
+      message: "Cadastro realizado com sucesso!",
+      user: { id: user.id, nome: user.nome, email: user.email },
+    });
+  } catch (error) {
+    console.error("Erro ao aceitar convite:", error);
+    res.status(500).json({ message: "Erro ao completar cadastro.", error: error.message });
   }
 };
