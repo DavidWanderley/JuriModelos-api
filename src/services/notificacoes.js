@@ -87,11 +87,11 @@ const enviarNotificacoesAmanha = async () => {
     for (const usuario of usuarios) {
       const [eventos, modelos] = await Promise.all([
         Evento.findAll({
-          where: { data: dataAmanha, status: 'pendente' },
+          where: { UserId: usuario.id, data: dataAmanha, status: 'pendente' },
           order: [['hora', 'ASC']],
         }),
         Modelo.findAll({
-          where: { data_audiencia: dataAmanha },
+          where: { UserId: usuario.id, data_audiencia: dataAmanha },
         }),
       ]);
 

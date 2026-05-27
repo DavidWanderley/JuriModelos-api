@@ -31,7 +31,7 @@ exports.salvarHistorico = async (req, res) => {
 
     res.status(201).json({
       message: "Documento arquivado!",
-      downloadUrl: `${process.env.API_URL || 'http://localhost:5000'}/uploads/gerados/${nomeArquivo}`,
+      downloadUrl: `${process.env.API_URL || `https://${req.get('host')}`}/uploads/gerados/${nomeArquivo}`,
     });
   } catch (error) {
     res.status(500).json({ error: "Falha ao processar e salvar o documento." });

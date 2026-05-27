@@ -6,8 +6,8 @@ const HTTP_STATUS = require('../util/httpStatus');
 
 exports.criar = async (req, res) => {
   try {
-    const escritorio = await Escritorio.create(req.body);
-    // Apenas vincula ao escritório se não for admin_site
+    const { nome, descricao } = req.body;
+    const escritorio = await Escritorio.create({ nome, descricao });
     if (req.userRole !== 'admin_site') {
       await User.update({ EscritorioId: escritorio.id }, { where: { id: req.userId } });
     }
@@ -136,6 +136,7 @@ exports.toggleMembroStatus = async (req, res) => {
     if (membro.id === req.userId) return ApiResponse.error(res, 'Você não pode alterar seu próprio status.', HTTP_STATUS.FORBIDDEN);
 
     await membro.update({ isActive: !membro.isActive });
+    await membro.reload();
     return ApiResponse.success(res, { isActive: membro.isActive }, `Membro ${membro.isActive ? 'ativado' : 'desativado'}.`);
   } catch (error) {
     return ApiResponse.error(res, 'Erro ao alterar status do membro.', HTTP_STATUS.INTERNAL_SERVER_ERROR, error.message);

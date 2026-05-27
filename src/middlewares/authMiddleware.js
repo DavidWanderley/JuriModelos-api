@@ -33,11 +33,16 @@ module.exports = (req, res, next) => {
 
     if (timeUntilExpiry < authConfig.refreshThreshold) {
       const newToken = jwt.sign(
-        { id: decoded.id, perfil: decoded.perfil },
+        {
+          id: decoded.id,
+          roleId: decoded.roleId,
+          roleName: decoded.roleName,
+          escritorioId: decoded.escritorioId,
+          permissions: decoded.permissions,
+        },
         authConfig.secret,
         { expiresIn: authConfig.expiresIn }
       );
-      
       res.setHeader('X-New-Token', newToken);
     }
 

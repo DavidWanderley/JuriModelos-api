@@ -46,7 +46,9 @@ app.use('/api/escritorios', escritorioRoutes);
 app.use('/uploads', express.static(uploadsPath));
 app.use(errorHandler);
 
-sequelize.sync({ alter: true })
+const syncOptions = process.env.NODE_ENV === 'production' ? {} : { alter: true };
+
+sequelize.sync(syncOptions)
     .then(() => {
         const PORT = process.env.PORT || 10000;
         app.listen(PORT, () => {
