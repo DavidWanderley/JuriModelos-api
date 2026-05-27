@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const escritorioController = require('../controllers/escritorioController');
+const acessoController = require('../controllers/acessoController');
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const { checkRole } = require('../middlewares/permissionMiddleware');
@@ -15,6 +16,10 @@ router.get('/meu/painel', checkRole(['admin_escritorio']), escritorioController.
 router.put('/meu/membros/:membroId/role', checkRole(['admin_escritorio']), escritorioController.atualizarMembroRole);
 router.patch('/meu/membros/:membroId/toggle', checkRole(['admin_escritorio']), escritorioController.toggleMembroStatus);
 router.delete('/meu/membros/:membroId', checkRole(['admin_escritorio']), escritorioController.removerMembro);
+
+router.get('/meu/complexidades', checkRole(['admin_escritorio']), acessoController.listarComplexidadesPorRole);
+router.get('/meu/acessos/:membroId', checkRole(['admin_escritorio']), acessoController.listarAcessos);
+router.put('/meu/acessos/:membroId', checkRole(['admin_escritorio']), acessoController.salvarAcessos);
 
 // admin_site apenas
 router.get('/', checkRole(['admin_site']), escritorioController.listarTodos);

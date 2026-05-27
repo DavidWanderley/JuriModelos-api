@@ -1,4 +1,6 @@
 const { Modelo } = require("../models");
+const { Op } = require('sequelize');
+const { resolverComplexidades, resolverModelosIndividuais } = require('./acessoController');
 
 exports.create = async (req, res) => {
   try {
@@ -15,11 +17,22 @@ exports.create = async (req, res) => {
 
 exports.findAll = async (req, res) => {
   try {
+    const complexidades = await resolverComplexidades(req.userId, req.userRole);
+    const { liberados, bloqueados } = await resolverModelosIndividuais(req.userId);
+
     const modelos = await Modelo.findAll({
       where: { EscritorioId: req.escritorioId },
       order: [["createdAt", "DESC"]]
     });
-    res.json(modelos);
+
+    const modelosFiltrados = modelos.filter(m => {
+      if (bloqueados.includes(m.id)) return false;
+      if (liberados.includes(m.id)) return true;
+      if (!m.complexidade) return true;
+      return complexidades.includes(m.complexidade);
+    });
+
+    res.json(modelosFiltrados);
   } catch (error) {
     res.status(500).json({ message: "Erro ao buscar modelos", error: error.message });
   }
@@ -31,9 +44,18 @@ exports.findById = async (req, res) => {
     const model = await Modelo.findOne({ where: { id, EscritorioId: req.escritorioId } });
 
     if (!model) {
-      return res
-        .status(404)
-        .json({ message: "Modelo não encontrado no banco de dados" });
+      return res.status(404).json({ message: "Modelo não encontrado no banco de dados" });
+    }
+
+    const { liberados, bloqueados } = await resolverModelosIndividuais(req.userId);
+    if (bloqueados.includes(model.id)) {
+      return res.status(403).json({ message: "Acesso negado a este modelo." });
+    }
+    if (!liberados.includes(model.id)) {
+      const complexidades = await resolverComplexidades(req.userId, req.userRole);
+      if (model.complexidade && !complexidades.includes(model.complexidade)) {
+        return res.status(403).json({ message: "Acesso negado. Complexidade não permitida para seu perfil." });
+      }
     }
 
     const content = model.conteudo || "";

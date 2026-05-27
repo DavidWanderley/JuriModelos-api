@@ -10,6 +10,7 @@ const Role = require('./Role');
 const Permission = require('./Permission');
 const RolePermission = require('./RolePermission');
 const Escritorio = require('./Escritorio');
+const AcessoIndividual = require('./AcessoIndividual');
 
 // Escritorio associations
 Escritorio.hasMany(User, { foreignKey: 'EscritorioId', onDelete: 'SET NULL' });
@@ -44,6 +45,10 @@ Evento.belongsTo(User, { foreignKey: 'UserId' });
 DocumentoGerado.belongsTo(Cliente, { foreignKey: 'ClienteId', as: 'cliente' });
 Cliente.hasMany(DocumentoGerado, { foreignKey: 'ClienteId' });
 
+// AcessoIndividual associations
+User.hasMany(AcessoIndividual, { foreignKey: 'UserId', onDelete: 'CASCADE' });
+AcessoIndividual.belongsTo(User, { foreignKey: 'UserId' });
+
 // Role/Permission associations
 User.belongsTo(Role, { foreignKey: 'RoleId', as: 'role' });
 Role.hasMany(User, { foreignKey: 'RoleId' });
@@ -72,4 +77,5 @@ module.exports = {
   RolePermission,
   Evento,
   Escritorio,
+  AcessoIndividual,
 };
