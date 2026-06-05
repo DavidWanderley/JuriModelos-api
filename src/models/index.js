@@ -11,6 +11,8 @@ const Permission = require('./Permission');
 const RolePermission = require('./RolePermission');
 const Escritorio = require('./Escritorio');
 const AcessoIndividual = require('./AcessoIndividual');
+const Prazo = require('./Prazo');
+const Notificacao = require('./Notificacao');
 
 // Escritorio associations
 Escritorio.hasMany(User, { foreignKey: 'EscritorioId', onDelete: 'SET NULL' });
@@ -49,6 +51,22 @@ Cliente.hasMany(DocumentoGerado, { foreignKey: 'ClienteId' });
 User.hasMany(AcessoIndividual, { foreignKey: 'UserId', onDelete: 'CASCADE' });
 AcessoIndividual.belongsTo(User, { foreignKey: 'UserId' });
 
+// Prazo associations
+User.hasMany(Prazo, { foreignKey: 'UserId', onDelete: 'CASCADE' });
+Prazo.belongsTo(User, { foreignKey: 'UserId' });
+Escritorio.hasMany(Prazo, { foreignKey: 'EscritorioId', onDelete: 'CASCADE' });
+Prazo.belongsTo(Escritorio, { foreignKey: 'EscritorioId' });
+Cliente.hasMany(Prazo, { foreignKey: 'ClienteId', onDelete: 'SET NULL' });
+Prazo.belongsTo(Cliente, { foreignKey: 'ClienteId', as: 'cliente' });
+Modelo.hasMany(Prazo, { foreignKey: 'ModeloId', onDelete: 'SET NULL' });
+Prazo.belongsTo(Modelo, { foreignKey: 'ModeloId', as: 'modelo' });
+
+// Notificacao associations
+User.hasMany(Notificacao, { foreignKey: 'UserId', onDelete: 'CASCADE' });
+Notificacao.belongsTo(User, { foreignKey: 'UserId' });
+Prazo.hasMany(Notificacao, { foreignKey: 'PrazoId', onDelete: 'CASCADE' });
+Notificacao.belongsTo(Prazo, { foreignKey: 'PrazoId', as: 'prazo' });
+
 // Role/Permission associations
 User.belongsTo(Role, { foreignKey: 'RoleId', as: 'role' });
 Role.hasMany(User, { foreignKey: 'RoleId' });
@@ -78,4 +96,6 @@ module.exports = {
   Evento,
   Escritorio,
   AcessoIndividual,
+  Prazo,
+  Notificacao,
 };

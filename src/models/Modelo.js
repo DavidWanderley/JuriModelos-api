@@ -12,9 +12,15 @@ const Modelo = sequelize.define("Modelo", {
   tipo_cliente: { type: DataTypes.STRING, allowNull: true },
   base_legal: { type: DataTypes.STRING, allowNull: true },
   tags: { type: DataTypes.STRING, allowNull: true },
+  numero_processo: { type: DataTypes.STRING, allowNull: true },
   data_audiencia: { type: DataTypes.STRING, allowNull: true },
   hora_audiencia: { type: DataTypes.STRING, allowNull: true },
   pdf_url: { type: DataTypes.STRING, allowNull: true },
+  ClienteId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: { model: 'clientes', key: 'id' }
+  },
   EscritorioId: {
     type: DataTypes.INTEGER,
     allowNull: true,

@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const { Op } = require('sequelize');
-const { Evento, Modelo, User } = require('../models');
+const { Evento, Modelo, User, Prazo, Notificacao } = require('../models');
 const { sendMail } = require('./mail');
 
 const formatData = (data) => {
@@ -113,6 +113,72 @@ const enviarNotificacoesAmanha = async () => {
 
 const iniciarNotificacoes = () => {
   cron.schedule('0 20 * * *', enviarNotificacoesAmanha, { timezone: 'America/Fortaleza' });
+  cron.schedule('0 20 * * *', verificarPrazos,          { timezone: 'America/Fortaleza' });
 };
 
-module.exports = { iniciarNotificacoes, enviarNotificacoesAmanha };
+const verificarPrazos = async () => {
+  try {
+    const hoje   = new Date();
+    const d1     = new Date(hoje); d1.setDate(d1.getDate() + 1);
+    const d7     = new Date(hoje); d7.setDate(d7.getDate() + 7);
+
+    const toStr  = (d) => d.toISOString().split('T')[0];
+    const datas  = [toStr(hoje), toStr(d1), toStr(d7)];
+
+    const prazos = await Prazo.findAll({
+      where: { data_prazo: { [Op.in]: datas }, status: 'pendente' },
+      include: [
+        { model: User,    attributes: ['id', 'nome', 'email'] },
+        { association: 'cliente', attributes: ['nome_completo'] },
+        { association: 'modelo',  attributes: ['titulo'] },
+      ],
+    });
+
+    for (const prazo of prazos) {
+      const diasRestantes = Math.round((new Date(prazo.data_prazo) - hoje) / (1000 * 60 * 60 * 24));
+      const quando = diasRestantes === 0 ? 'HOJE' : diasRestantes === 1 ? 'amanhã' : 'em 7 dias';
+      const mensagem = `⚖️ Prazo "${prazo.titulo}" vence ${quando} (${prazo.data_prazo})${prazo.numero_processo ? ` — Proc. ${prazo.numero_processo}` : ''}`;
+
+      // Notificação no sino
+      const jaExiste = await Notificacao.findOne({
+        where: { UserId: prazo.UserId, PrazoId: prazo.id, mensagem },
+      });
+      if (!jaExiste) {
+        await Notificacao.create({ UserId: prazo.UserId, PrazoId: prazo.id, mensagem, tipo: 'prazo' });
+      }
+
+      // E-mail
+      await sendMail({
+        to: prazo.User.email,
+        from: process.env.MAIL_USER,
+        subject: `⚖️ Prazo processual vence ${quando} - ${prazo.titulo}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background:#0e1e3f; padding:24px; text-align:center;">
+              <h1 style="color:#f59e0b; margin:0;">JuriModelos</h1>
+            </div>
+            <div style="padding:32px;">
+              <h2 style="color:#1e293b;">⚖️ Alerta de Prazo Processual</h2>
+              <p>Olá, <strong>${prazo.User.nome}</strong>!</p>
+              <table style="width:100%; border-collapse:collapse; background:#f8fafc; border-radius:8px;">
+                <tr><td style="padding:10px 16px; font-weight:bold; color:#64748b;">Processo</td><td style="padding:10px 16px;">${prazo.titulo}</td></tr>
+                ${prazo.numero_processo ? `<tr><td style="padding:10px 16px; font-weight:bold; color:#64748b;">Nº Processo</td><td style="padding:10px 16px;">${prazo.numero_processo}</td></tr>` : ''}
+                ${prazo.cliente ? `<tr><td style="padding:10px 16px; font-weight:bold; color:#64748b;">Cliente</td><td style="padding:10px 16px;">${prazo.cliente.nome_completo}</td></tr>` : ''}
+                ${prazo.modelo ? `<tr><td style="padding:10px 16px; font-weight:bold; color:#64748b;">Documento</td><td style="padding:10px 16px;">${prazo.modelo.titulo}</td></tr>` : ''}
+                <tr><td style="padding:10px 16px; font-weight:bold; color:#64748b;">Data do Prazo</td><td style="padding:10px 16px; color:#ef4444; font-weight:bold;">${prazo.data_prazo}${prazo.hora ? ' às ' + prazo.hora : ''}</td></tr>
+                <tr><td style="padding:10px 16px; font-weight:bold; color:#64748b;">Vencimento</td><td style="padding:10px 16px; color:#f59e0b; font-weight:bold;">${quando.toUpperCase()}</td></tr>
+              </table>
+              <div style="margin-top:24px; text-align:center;">
+                <a href="${process.env.FRONTEND_URL}/prazos" style="background:#0e1e3f; color:#fff; padding:14px 28px; border-radius:10px; font-weight:bold; text-decoration:none;">Ver Prazos</a>
+              </div>
+            </div>
+          </div>
+        `,
+      });
+    }
+  } catch (error) {
+    console.error('Erro ao verificar prazos:', error.message);
+  }
+};
+
+module.exports = { iniciarNotificacoes, enviarNotificacoesAmanha, verificarPrazos };
