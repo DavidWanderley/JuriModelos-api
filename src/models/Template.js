@@ -14,6 +14,6 @@ const Template = sequelize.define("Template", {
     allowNull: true,
     references: { model: 'escritorios', key: 'id' }
   },
-});
+}, { paranoid: true });
 
 module.exports = Template;

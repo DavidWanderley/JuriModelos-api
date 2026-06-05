@@ -47,6 +47,7 @@ const User = sequelize.define('User', {
     }
 
 }, {
+    paranoid: true,
     hooks: {
         beforeCreate: async (user) => {
             if (user.password) {

@@ -14,6 +14,7 @@ const eventoRoutes = require('./routes/eventoRoutes');
 const escritorioRoutes = require('./routes/escritorioRoutes');
 const prazoRoutes = require('./routes/prazoRoutes');
 const notificacaoRoutes = require('./routes/notificacaoRoutes');
+const processoRoutes = require('./routes/processoRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 const { iniciarNotificacoes } = require('./services/notificacoes');
 const path = require('path');
@@ -47,6 +48,7 @@ app.use('/api/eventos', eventoRoutes);
 app.use('/api/escritorios', escritorioRoutes);
 app.use('/api/prazos', prazoRoutes);
 app.use('/api/notificacoes', notificacaoRoutes);
+app.use('/api/processos', processoRoutes);
 app.use('/uploads', express.static(uploadsPath));
 app.use(errorHandler);
 

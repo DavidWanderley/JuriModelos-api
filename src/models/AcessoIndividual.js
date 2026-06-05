@@ -11,6 +11,6 @@ const AcessoIndividual = sequelize.define('AcessoIndividual', {
   valor:     { type: DataTypes.STRING,  allowNull: false },
   granted:   { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
   EscritorioId: { type: DataTypes.INTEGER, allowNull: true },
-});
+}, { paranoid: true });
 
 module.exports = AcessoIndividual;

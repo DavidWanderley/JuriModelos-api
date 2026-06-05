@@ -19,6 +19,7 @@ const Prazo = sequelize.define('Prazo', {
   ClienteId:   { type: DataTypes.INTEGER, allowNull: true, references: { model: 'clientes',   key: 'id' } },
   UserId:      { type: DataTypes.INTEGER, allowNull: false, references: { model: 'Users',     key: 'id' } },
   EscritorioId:{ type: DataTypes.INTEGER, allowNull: true, references: { model: 'escritorios', key: 'id' } },
-});
+  ProcessoId:  { type: DataTypes.INTEGER, allowNull: true, references: { model: 'Processos',   key: 'id' } },
+}, { paranoid: true });
 
 module.exports = Prazo;

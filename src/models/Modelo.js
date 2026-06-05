@@ -26,6 +26,6 @@ const Modelo = sequelize.define("Modelo", {
     allowNull: true,
     references: { model: 'escritorios', key: 'id' }
   },
-});
+}, { paranoid: true });
 
 module.exports = Modelo;

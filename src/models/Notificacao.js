@@ -7,6 +7,6 @@ const Notificacao = sequelize.define('Notificacao', {
   tipo:     { type: DataTypes.STRING,  defaultValue: 'prazo' },
   UserId:   { type: DataTypes.INTEGER, allowNull: false, references: { model: 'Users',  key: 'id' } },
   PrazoId:  { type: DataTypes.INTEGER, allowNull: true,  references: { model: 'Prazos', key: 'id' } },
-});
+}, { paranoid: true });
 
 module.exports = Notificacao;

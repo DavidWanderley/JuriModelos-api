@@ -15,6 +15,7 @@ const Escritorio = sequelize.define('Escritorio', {
 }, {
   tableName: 'escritorios',
   timestamps: true,
+  paranoid: true,
 });
 
 module.exports = Escritorio;

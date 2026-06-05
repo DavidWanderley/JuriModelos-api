@@ -29,6 +29,6 @@ const Evento = sequelize.define("Evento", {
     allowNull: true,
     references: { model: 'escritorios', key: 'id' }
   },
-});
+}, { paranoid: true });
 
 module.exports = Evento;

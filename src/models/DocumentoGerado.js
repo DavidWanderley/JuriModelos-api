@@ -11,6 +11,7 @@ const DocumentoGerado = sequelize.define('DocumentoGerado', {
 }, {
   tableName: 'documentos_gerados',
   timestamps: true,
+  paranoid: true,
 });
 
 module.exports = DocumentoGerado;
